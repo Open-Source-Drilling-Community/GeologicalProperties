@@ -1,0 +1,824 @@
+﻿@inject ILogger<MudInputWithUnitAdornment> logger
+@inject ISnackbar Snackbar
+
+<MudPaper Class="my-1 mx-1 py-4" Style="@($"background:{DataUtils.FLOATING_COLOUR};")">
+    <MudPaper Class="my-4 mx-2" Style="@($"background:{DataUtils.FLOATING_COLOUR_DEEP};")">
+        <MudText Class="mx-4 px-4 ym-2" Typo="Typo.h6"><b>Geological Properties</b></MudText>
+        <MudDivider />
+        <MudPaper Class="my-4 mx-2 py-2">
+            <MudGrid Class="my-4 mx-2 py-2">
+                <MudItem xs="2">
+                    <MudText Typo="Typo.body1"><b>Name</b></MudText>
+                    <MudTextField @bind-Value="@currentGeologicalProperties.Name" />
+                </MudItem>
+                <MudItem xs="2">
+                    <MudText Typo="Typo.body1"><b>Description</b></MudText>
+                    <MudTextField @bind-Value="@currentGeologicalProperties.Description" />
+                </MudItem>
+                @if (Fields != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Field" @bind-Value="@_selectedField" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var fieldKPV in Fields)
+                            {
+                                if (fieldKPV.Key != Guid.Empty && fieldKPV.Value != null && !string.IsNullOrEmpty(fieldKPV.Value.Name))
+                                {
+                                    <MudSelectItem Value="@fieldKPV.Value">@fieldKPV.Value.Name</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (Clusters != null && _selectedField != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Cluster" @bind-Value="@_selectedCluster" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var clusterKVP in Clusters.Where(x => (x.Value != null && x.Value.FieldID != null && _selectedField != null && _selectedField.MetaInfo != null && _selectedField.MetaInfo.ID == x.Value.FieldID && !x.Value.IsSingleWell)))
+                            {
+                                <MudSelectItem Value="@clusterKVP.Value">@clusterKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (Wells != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Well" @bind-Value="@_selectedWell" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var wellKVP in Wells.Where(x => (x.Value != null && ((x.Value.ClusterID != null && _selectedCluster != null && _selectedCluster.MetaInfo != null && _selectedCluster.MetaInfo.ID == x.Value.ClusterID && !x.Value.IsSingleWell) || (x.Value.IsSingleWell)))))
+                            {
+                                <MudSelectItem Value="@wellKVP.Value">@wellKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (WellBores != null && _selectedWell != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Wellbore" @bind-Value="@_selectedWellBore" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var wellBoreKVP in WellBores.Where(x => (x.Value != null && x.Value.WellID != null && _selectedWell != null && _selectedWell.MetaInfo != null && _selectedWell.MetaInfo.ID == x.Value.WellID)))
+                            {
+                                <MudSelectItem Value="@wellBoreKVP.Value">@wellBoreKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+            </MudGrid>
+        </MudPaper>
+        <MudPaper Class="my-4 mx-2 py-2">
+            <MudToolBar>
+                <MudText Class="mx-4 px-4 ym-2" Typo="Typo.h6"><b>Data</b></MudText>
+                <MudSpacer />
+            </MudToolBar>
+            <MudToolBar>
+                <MudSpacer />
+                <MudButton StartIcon="@Icons.Material.Filled.Upload" IconColor="@Color.Primary"
+                           OnClick="@UploadData">@showUploadText</MudButton>
+            </MudToolBar>
+            @if (showUpload)
+            {
+                <InputFile Class="my-2 mx-2 px-2 py-2" OnChange="HandleFileSelected" accept=".csv" />
+                <MudPaper Class="my-2 mx-2 px-2 py-4">
+                    <MudGrid Class="my-2 mx-2 px-2">
+                        @* Measured Depth *@            
+                            <MudItem xs="4">
+                            <MudText Typo="Typo.body2"><b> Measured Depth</b></MudText>
+                            <MudGrid>
+                                <MudItem xs="5">
+                                    <MudNumericField T="int?" @bind-Value="@measuredDepthColumn" Label="Column" Variant="Variant.Text" Min="1" Max="@maxColumns" ShrinkLabel />
+                                </MudItem>
+                                <MudItem xs="5">
+                                    <MudSelect T="string" @bind-Value="@measuredDepthUnit" Label="Unit">
+                                        @foreach (string unit in depthDictUnits.Keys)
+                                        {
+                                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                        @* Internal Friction Angle *@            
+                            <MudItem xs="4">
+                            <MudText Typo="Typo.body2"><b> Internal Friction Angle</b></MudText>
+                            <MudGrid>
+                                <MudItem xs="5">
+                                    <MudNumericField T="int?" @bind-Value="@internalFrictionAngleColumn" Label="Column" Variant="Variant.Text" Min="1" Max="@maxColumns" ShrinkLabel />
+                                </MudItem>
+                                <MudItem xs="5">
+                                    <MudSelect T="string" @bind-Value="@internalFrictionAngleUnit" Label="Unit">
+                                        @foreach (string unit in angleDictUnits.Keys)
+                                        {
+                                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                        @* UCS *@            
+                            <MudItem xs="4">
+                            <MudText Typo="Typo.body2"><b> UCS</b></MudText>
+                            <MudGrid>
+                                <MudItem xs="5">
+                                    <MudNumericField T="int?" @bind-Value="@ucsColumn" Label="Column" Variant="Variant.Text" Min="1" Max="@maxColumns" ShrinkLabel />
+                                </MudItem>
+                                <MudItem xs="5">
+                                    <MudSelect T="string" @bind-Value="@ucsUnit" Label="Unit">
+                                        @foreach (string unit in stressDictUnits.Keys)
+                                        {
+                                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                        @* CCS *@            
+                            <MudItem xs="4">
+                            <MudText Typo="Typo.body2"><b> Pressure Differential</b></MudText>
+                            <MudGrid>
+                                <MudItem xs="5">
+                                    <MudNumericField T="int?" @bind-Value="@pressureColumn" Label="Column" Variant="Variant.Text" Min="1" Max="@maxColumns" ShrinkLabel />
+                                </MudItem>
+                                <MudItem xs="5">
+                                    <MudSelect T="string" @bind-Value="@pressureUnit" Label="Unit">
+                                        @foreach (string unit in pressureDictUnits.Keys)
+                                        {
+                                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                        @* Porosity *@            
+                            <MudItem xs="4">
+                            <MudText Typo="Typo.body2"><b> Porosity</b></MudText>
+                            <MudGrid>
+                                <MudItem xs="5">
+                                    <MudNumericField T="int?" @bind-Value="@porosityColumn" Label="Column" Variant="Variant.Text" Min="1" Max="@maxColumns" ShrinkLabel />
+                                </MudItem>
+                                <MudItem xs="5">
+                                    <MudSelect T="string" @bind-Value="@porosityUnit" Label="Unit">
+                                        @foreach (string unit in porosityDictUnits.Keys)
+                                        {
+                                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                        @* Permeability *@            
+                            <MudItem xs="4">
+                            <MudText Typo="Typo.body2"><b> Permeability</b></MudText>
+                            <MudGrid>
+                                <MudItem xs="5">
+                                    <MudNumericField T="int?" @bind-Value="@permeabilityColumn" Label="Column" Variant="Variant.Text" Min="1" Max="@maxColumns" ShrinkLabel />
+                                </MudItem>
+                                <MudItem xs="5">
+                                    <MudSelect T="string" @bind-Value="@permeabilityUnit" Label="Unit">
+                                        @foreach (string unit in permeabilityDictUnits.Keys)
+                                        {
+                                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+            <MudToolBar>
+                <MudSpacer />
+                <MudButton StartIcon="@Icons.Material.Filled.TableChart" IconColor="@Color.Primary"
+                           OnClick="@HideShowTable">@showTableText</MudButton>
+            </MudToolBar>
+            <MudCollapse Expanded="@showTable">
+                <MudGrid Class="my-2 mx-1 py-2 align-center">
+                    <MudItem xs="1">
+                        <MudText Typo="Typo.body1"><b>Row #</b></MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Measured Depth</b></MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Internal Friction Angle</b></MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Permeability</b></MudText>
+                    </MudItem>
+                    <MudItem xs="1">
+                        <MudText Typo="Typo.body1"><b>Porosity</b></MudText>
+                    </MudItem>
+                    <MudItem xs="1">
+                        <MudText Typo="Typo.body1"><b>UCS</b></MudText>
+                    </MudItem>
+                    <MudItem xs="1">
+                        <MudText Typo="Typo.body1"><b>Pressure Differential</b></MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudIconButton Icon="@Icons.Material.Outlined.Add" Color="@Color.Success" OnClick="@AddTableRow" />
+                        <MudIconButton Icon="@Icons.Material.Outlined.Remove" Color="@Color.Error" OnClick="@RemoveTableRow" />
+                    </MudItem>
+                </MudGrid>
+                <MudDivider Class="pt-1" />
+                @for (int i = 0; i < geologicalPropertiesTable.Count; i++)
+                {
+                    int index = i;
+                    @*
+                        Units checked at 30/09/2025: Uploaded units SI standard must match those of
+                    the inputs in here.
+                     
+                    *@
+                    <MudGrid Class="mx-1 my-1 align-center">
+                        <MudItem xs="1">
+                            <MudText Typo="Typo.body1"><b>@(index + 1). </b></MudText>
+                        </MudItem>
+
+                        <MudItem xs="2">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Measured Depth" QuantityName="DepthDrilling"
+                                                       SIValueNullable="@measuredDepth[index]"
+                                                       SIValueNullableChanged="val => { UpdateMeasuredDepth(val, index); }" />
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Internal friction angle" QuantityName="PlaneAngleDrilling"
+                                                       SIValueNullable="@internalFrictionAngles[index]"
+                                                       SIValueNullableChanged="val => { UpdateInternalFrictionAngles(val, index); }" />
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Permeability" QuantityName="PorousMediumPermeabilityDrilling"
+                                                       SIValueNullable="@permeability[index]"
+                                                       SIValueNullableChanged="val => { UpdatePermeability(val, index); }" />
+                        </MudItem>
+                        <MudItem xs="1">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Porosity" QuantityName="Porosity"
+                                                       SIValueNullable="@porosity[index]"
+                                                       SIValueNullableChanged="val => { UpdatePorosity(val, index); }" />
+                        </MudItem>
+                        <MudItem xs="1">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="UCS" QuantityName="FormationStrengthDrilling"
+                                                       SIValueNullable="@unconfinedCompressiveStrength[index]"
+                                                       SIValueNullableChanged="val => { UpdateUCS(val, index); }" />
+                        </MudItem>
+                        <MudItem xs="1">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Pressure" QuantityName="PressureDrilling"
+                                                       SIValueNullable="@pressure[index]"
+                                                       SIValueNullableChanged="val => { UpdatePressure(val, index); }" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudCollapse>
+            <br />
+        </MudPaper>
+        <MudToolBar>
+            @if (GeologicalPropertiesID != null)
+            {
+                <MudButton StartIcon="@Icons.Material.Outlined.Save" IconColor="@Color.Primary"
+                           OnClick="@SaveGeologicalProperties">Save</MudButton>
+            }
+            <MudButton StartIcon="@Icons.Material.Outlined.SaveAs" IconColor="@Color.Primary"
+                       OnClick="@SaveAsGeologicalProperties">Save New</MudButton>
+            <MudSpacer />
+            <MudButton StartIcon="@Icons.Material.Outlined.Close" IconColor="@Color.Error"
+                       OnClick="@ClosePanel">Close</MudButton>
+        </MudToolBar>
+    </MudPaper>
+</MudPaper>
+
+@code {
+    [CascadingParameter]
+    private MudUnitAndReferenceChoiceTag? Parent { get; set; }
+    [Parameter]
+    public bool ShowPanel { get; set; } = false;
+    [Parameter]
+    public Guid? GeologicalPropertiesID { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Field>? Fields { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Cluster>? Clusters { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Well>? Wells { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, WellBore>? WellBores { get; set; } = null;
+    [Parameter]
+    public EventCallback ValueChanged { get; set; }
+
+    private Field? _selectedField = null;
+    private Cluster? _selectedCluster = null;
+    private Well? _selectedWell = null;
+    private WellBore? _selectedWellBore = null;
+
+    //Geological property instance
+    private GeologicalProperties currentGeologicalProperties = PseudoConstructors.ConstructGeologicalProperties();
+    //Geological property table inputs
+    private List<double?> internalFrictionAngles = new List<double?> { null };
+    private List<double?> unconfinedCompressiveStrength = new List<double?> { null };
+    private List<double?> confinedCompressiveStrength = new List<double?> { null };
+    private List<double?> porosity = new List<double?> { null };
+    private List<double?> pressure = new List<double?> { null };
+    private List<double?> permeability = new List<double?> { null };
+    private List<double?> measuredDepth = new List<double?> { null };
+    private List<GeologicalPropertyEntry> geologicalPropertiesTable = PseudoConstructors.ConstructGeologicalPropertiesTableList();
+    //Show table
+    private bool showTable = false;
+    private string showTableText = "Show";
+    //Show Upload
+    private string[]? headerData = null;
+    private List<double?[]> valueData = new List<double?[]>();
+    private string fileName = "";
+    private int maxColumns = 6;
+    private int maxRows = 0;
+    private bool showUpload = false;
+    private string showUploadText = "Upload";
+    //Column number variables
+    private int? internalFrictionAngleColumn;
+    private int? ucsColumn;
+    private int? porosityColumn;
+    private int? permeabilityColumn;
+    private int? measuredDepthColumn;
+    private int? pressureColumn;
+    //Unit variables
+    private string? internalFrictionAngleUnit;
+    private string? ucsUnit;
+    private string? porosityUnit;
+    private string? permeabilityUnit;
+    private string? measuredDepthUnit;
+    private string? pressureUnit;
+    //Unit dictionaries
+    private Dictionary<string, UnitChoice> stressDictUnits = new();
+    private Dictionary<string, UnitChoice> depthDictUnits = new();
+    private Dictionary<string, UnitChoice> porosityDictUnits = new();
+    private Dictionary<string, UnitChoice> permeabilityDictUnits = new();
+    private Dictionary<string, UnitChoice> angleDictUnits = new();
+    private Dictionary<string, UnitChoice> pressureDictUnits = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Units checked on 30/09/2025
+        stressDictUnits = GetAvailableUnits("FormationStrengthDrillingQuantity", out ucsUnit);//SI: Pa
+        depthDictUnits = GetAvailableUnits("DepthDrillingQuantity", out measuredDepthUnit);//SI: m
+        porosityDictUnits = GetAvailableUnits("PorosityQuantity", out porosityUnit);
+        porosityUnit = porosityDictUnits.Keys.ToList()[1];
+        permeabilityDictUnits = GetAvailableUnits("PorousMediumPermeabilityDrillingQuantity", out permeabilityUnit);//SI: m²
+        angleDictUnits = GetAvailableUnits("PlaneAngleDrillingQuantity", out internalFrictionAngleUnit);//SI: radians
+        pressureDictUnits = GetAvailableUnits("PressureDrillingQuantity", out pressureUnit);//SI: Pa
+        await Task.Delay(1);
+    }
+
+    private Dictionary<string, UnitChoice> GetAvailableUnits(string quantityChoice, out string? siUnits)
+    {
+        Dictionary<string, UnitChoice> AvailableUnits = new();
+        List<UnitChoice> unitChoices = new List<UnitChoice>();
+        if (BaseUnitSystem.AvailableBasePhysicalQuantities != null)
+        {
+            foreach (var quantity in BaseUnitSystem.AvailableBasePhysicalQuantities)
+            {
+                if (quantity.GetType().Name == quantityChoice)
+                {
+                    unitChoices = quantity.UnitChoices;
+                }
+            }
+        }
+        if (unitChoices.Count == 0 && DrillingPhysicalQuantity.AvailablePhysicalQuantities != null)
+        {
+            foreach (var quantity in DrillingPhysicalQuantity.AvailablePhysicalQuantities)
+            {
+                if (quantity.GetType().Name == quantityChoice)
+                {
+                    unitChoices = quantity.UnitChoices;
+                }
+            }
+        }
+        siUnits = "";
+        foreach (UnitChoice units in unitChoices)
+        {
+            if (units.IsSI)
+            {
+                siUnits = units.UnitLabel;
+            }
+            AvailableUnits.Add(units.UnitLabel, units);
+        }
+        return AvailableUnits;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ShowPanel)
+        {
+            if (GeologicalPropertiesID != null)
+            {
+                try
+                {
+                    //Load geological properties if ID is available
+                    currentGeologicalProperties = (GeologicalProperties)await APIUtils.ClientGeologicalProperties.
+                        GetGeologicalPropertiesByIdAsync((Guid)GeologicalPropertiesID);
+
+                    if (currentGeologicalProperties != null)
+                    {
+                        Guid? gpWellBoreID = currentGeologicalProperties.WellBoreID;
+                        if (gpWellBoreID != null && gpWellBoreID != Guid.Empty)
+                        {
+                            WellBore wellBore = await APIUtils.ClientWellBore.GetWellBoreByIdAsync(gpWellBoreID.Value);
+                            if (wellBore != null && wellBore.WellID != null && wellBore.WellID != Guid.Empty)
+                            {
+                                _selectedWellBore = wellBore;
+                                Well well = await APIUtils.ClientWell.GetWellByIdAsync(wellBore.WellID.Value);
+                                if (well != null && well.ClusterID != null && well.ClusterID != Guid.Empty)
+                                {
+                                    _selectedWell = well;
+                                    Cluster cluster = await APIUtils.ClientCluster.GetClusterByIdAsync(well.ClusterID.Value);
+                                    if (cluster != null && cluster.FieldID != null && cluster.FieldID != Guid.Empty)
+                                    {
+                                        if (cluster.ReferenceDepth != null && cluster.ReferenceDepth.GaussianValue != null && cluster.ReferenceDepth.GaussianValue.Mean != null)
+                                        {
+                                            DataUtils.UnitAndReferenceParameters.WellHeadDepthReferenceSource.WellHeadDepthReference = cluster.ReferenceDepth.GaussianValue.Mean;
+                                        }
+                                        // if (cluster.RotaryTableDepth != null && cluster.RotaryTableDepth.DiracDistributionValue != null && cluster.RotaryTableDepth.DiracDistributionValue.Value != null)
+                                        // {
+                                        //     DataUtils.UnitAndReferenceParameters.RotaryTableDepthReferenceSource.RotaryTableDepthReference = cluster.RotaryTableDepth.DiracDistributionValue.Value;
+                                        // }
+                                        if (cluster.GroundMudLineDepth != null && cluster.GroundMudLineDepth.GaussianValue != null && cluster.GroundMudLineDepth.GaussianValue.Mean != null)
+                                        {
+                                            DataUtils.UnitAndReferenceParameters.GroundMudLineDepthReferenceSource.GroundMudLineDepthReference = cluster.GroundMudLineDepth.GaussianValue.Mean;
+                                        }
+                                        if (cluster.TopWaterDepth != null && cluster.TopWaterDepth.GaussianValue != null && cluster.TopWaterDepth.GaussianValue.Mean != null)
+                                        {
+                                            DataUtils.UnitAndReferenceParameters.SeaWaterLevelDepthReferenceSource.SeaWaterLevelDepthReference = cluster.TopWaterDepth.GaussianValue.Mean;
+                                        }
+                                        if (!cluster.IsSingleWell)
+                                        {
+                                            _selectedCluster = cluster;
+                                        }
+                                        Field field = await APIUtils.ClientField.GetFieldByIdAsync(cluster.FieldID.Value);
+                                        if (field != null)
+                                        {
+                                            _selectedField = field;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        int index = 0;
+                        geologicalPropertiesTable = currentGeologicalProperties.GeologicalPropertyTable.ToList();
+                        //Loop through loaded table and update values
+                        foreach (GeologicalPropertyEntry geoTable in currentGeologicalProperties.GeologicalPropertyTable)
+                        {
+                            if (index < measuredDepth.Count)
+                            {
+                                internalFrictionAngles[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.InternalFrictionAngle);
+                                unconfinedCompressiveStrength[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.UnconfinedCompressiveStrength);
+                                confinedCompressiveStrength[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.ConfinedCompressiveStrength);
+                                pressure[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.PressureDifferential);
+                                porosity[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.Porosity);
+                                permeability[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.Permeability);
+                                measuredDepth[index] = ConversionsFromOSDC.GaussianToDouble(geoTable.MeasuredDepth);
+
+                            }
+                            else
+                            {
+                                internalFrictionAngles.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.InternalFrictionAngle));
+                                unconfinedCompressiveStrength.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.UnconfinedCompressiveStrength));
+                                confinedCompressiveStrength.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.ConfinedCompressiveStrength));
+                                pressure.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.PressureDifferential));
+                                porosity.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.Porosity));
+                                permeability.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.Permeability));
+                                measuredDepth.Add(ConversionsFromOSDC.GaussianToDouble(geoTable.MeasuredDepth));
+                            }
+                            index += 1;
+                        }//Close foreach GeologicalPropertyTable
+                    }//currentGeologicalProperties != null
+                }//Close try get currentGeologicalProperties
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Impossible to load geological properties from client");
+                }
+
+            }//Close if GeologicalPropertiesID != null
+        }//Close if show panel
+    }//Close OnParametersSetAsync
+
+    private void AddTableRow()
+    {
+        internalFrictionAngles.Add(null);
+        unconfinedCompressiveStrength.Add(null);
+        confinedCompressiveStrength.Add(null);
+        porosity.Add(null);
+        pressure.Add(null);
+        permeability.Add(null);
+        measuredDepth.Add(null);
+        geologicalPropertiesTable.Add(PseudoConstructors.ConstructGeologicalPropertyEntry());
+    }//Close add row
+    private void RemoveTableRow()
+    {
+        if (geologicalPropertiesTable.Count > 1)
+        {
+            internalFrictionAngles.RemoveAt(internalFrictionAngles.Count - 1);
+            unconfinedCompressiveStrength.RemoveAt(unconfinedCompressiveStrength.Count - 1);
+            confinedCompressiveStrength.RemoveAt(confinedCompressiveStrength.Count - 1);
+            porosity.RemoveAt(porosity.Count - 1);
+            pressure.RemoveAt(pressure.Count - 1);
+            permeability.RemoveAt(permeability.Count - 1);
+            measuredDepth.RemoveAt(measuredDepth.Count - 1);
+            geologicalPropertiesTable.RemoveAt(geologicalPropertiesTable.Count - 1);
+        }
+    }//Close remove row
+
+    private async Task ClosePanel()
+    {
+        ShowPanel = false;
+        await SendMessage();
+    }
+
+    private async Task SaveAsGeologicalProperties()
+    {
+        try
+        {
+            currentGeologicalProperties.MetaInfo = new MetaInfo { ID = Guid.NewGuid() };
+            currentGeologicalProperties.GeologicalPropertyTable = geologicalPropertiesTable;
+            currentGeologicalProperties.WellBoreID = (_selectedWellBore != null && _selectedWellBore.MetaInfo != null && _selectedWellBore.MetaInfo.ID != Guid.Empty) ? _selectedWellBore.MetaInfo.ID : null;
+            await APIUtils.ClientGeologicalProperties.PostGeologicalPropertiesAsync(currentGeologicalProperties);
+            logger.LogInformation("Geological properties posted successfully");
+            Snackbar.Add("Geological properties posted successfully", Severity.Success);
+            ShowPanel = false;
+            await SendMessage();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to add a new geological properties component");
+            Snackbar.Add("Impossible to add a new geological properties component", Severity.Warning);
+        }
+    }
+    private async Task SaveGeologicalProperties()
+    {
+        try
+        {
+            currentGeologicalProperties.LastModificationDate = DateTimeOffset.UtcNow;
+            currentGeologicalProperties.GeologicalPropertyTable = geologicalPropertiesTable;
+            currentGeologicalProperties.WellBoreID = (_selectedWellBore != null && _selectedWellBore.MetaInfo != null && _selectedWellBore.MetaInfo.ID != Guid.Empty) ? _selectedWellBore.MetaInfo.ID : null;
+            await APIUtils.ClientGeologicalProperties.PutGeologicalPropertiesByIdAsync(currentGeologicalProperties.MetaInfo.ID, currentGeologicalProperties);
+            logger.LogInformation("Geological properties updated successfully");
+            Snackbar.Add("Geological properties updated successfully", Severity.Success);
+            ShowPanel = false;
+            await SendMessage();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to update geological properties component");
+            Snackbar.Add("Impossible to update geological properties component", Severity.Warning);
+        }
+    }
+
+
+
+    //Send message to parent component
+    private async Task SendMessage()
+    {
+        await ValueChanged.InvokeAsync();
+    }
+
+    //Update unit system
+    private void ManageUnits() { }
+    private void UpdateInternalFrictionAngles(double? val, int index)
+    {
+        internalFrictionAngles[index] = val;
+        geologicalPropertiesTable[index].InternalFrictionAngle = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+    private void UpdateUCS(double? val, int index)
+    {
+        unconfinedCompressiveStrength[index] = val;
+        geologicalPropertiesTable[index].UnconfinedCompressiveStrength = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+    private void UpdateCCS(double? val, int index)
+    {
+        confinedCompressiveStrength[index] = val;
+        geologicalPropertiesTable[index].ConfinedCompressiveStrength = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+    private void UpdatePressure(double? val, int index)
+    {
+        pressure[index] = val;
+        geologicalPropertiesTable[index].PressureDifferential = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+    private void UpdatePorosity(double? val, int index)
+    {
+        porosity[index] = val;
+        geologicalPropertiesTable[index].Porosity = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+    private void UpdatePermeability(double? val, int index)
+    {
+        permeability[index] = val;
+        geologicalPropertiesTable[index].Permeability = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+    private void UpdateMeasuredDepth(double? val, int index)
+    {
+        measuredDepth[index] = val;
+        geologicalPropertiesTable[index].MeasuredDepth = ConversionsFromOSDC.DoubleToGaussian(val);
+    }
+
+    private void UploadData()
+    {
+        showUpload = !showUpload;
+        if (showUpload)
+        {
+            showUploadText = "Close Upload";
+        }
+        else
+        {
+            showUploadText = "Upload";
+        }
+    }
+    private void CloseUploadData()
+    {
+        showUpload = false;
+    }
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        //Delete possible old values
+        valueData.Clear();
+        var file = e.File;
+        fileName = file.Name;
+        if (File.Exists(fileName))
+        {
+            using (StreamReader reader = new StreamReader(fileName))
+            {
+                string? line;
+                bool headerLine = false;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    string[] values = line.Split(';', '\t');
+                    maxColumns = values.Length;
+                    double?[] valuesDouble = new double?[maxColumns];
+                    for (int i = 0; i < maxColumns; i++)
+                    {
+                        double valDouble;
+                        //Check for empty strings
+                        if (string.IsNullOrEmpty(values[i]))
+                        {
+                            valuesDouble[i] = null;
+                            headerLine = false;
+                        }
+                        else
+                        {
+                            //Try to parse doubles
+                            if (Double.TryParse(values[i], out valDouble))
+                            {
+                                valuesDouble[i] = valDouble;
+                                headerLine = false;
+                            }
+                            else
+                            {
+                                headerLine = true;
+                            }
+                        }
+                    }//Close for loop
+                    if (headerLine)
+                    {
+                        headerData = values;
+                    }//Close if header
+                    else
+                    {
+                        valueData.Add(valuesDouble);
+                    }//Close else
+                }//Close while loop
+            }
+            showTable = true;
+            maxRows = valueData.Count;
+            if (currentGeologicalProperties != null && maxRows > 0 && valueData != null && valueData.Count == maxRows)
+            {
+                List<GeologicalPropertyEntry> propertiesTable = new List<GeologicalPropertyEntry>();
+                currentGeologicalProperties.GeologicalPropertyTable = propertiesTable;
+                for (int i = 0; i < maxRows; i++)
+                {
+                    propertiesTable.Add(PseudoConstructors.ConstructGeologicalPropertyEntry());
+                }
+                try
+                {
+                    //Internal friction angle
+                    if (internalFrictionAngleColumn != null && internalFrictionAngleUnit != null)
+                    {
+                        UnitChoice unitChoice = angleDictUnits[internalFrictionAngleUnit];
+                        for (int i = 0; i < maxRows; i++)
+                        {
+                            double? val = valueData[i][(int)internalFrictionAngleColumn - 1];
+                            double? valSI = ConvertToSI(val, unitChoice);
+                            propertiesTable[i].InternalFrictionAngle =
+                                PseudoConstructors.ConstructGaussianDrillingProperty(valSI);
+                        }
+                    }
+                    //Unconfined Compressive Strength
+                    if (ucsColumn != null && ucsUnit != null)
+                    {
+                        UnitChoice unitChoice = stressDictUnits[ucsUnit];
+                        for (int i = 0; i < maxRows; i++)
+                        {
+                            double? val = valueData[i][(int)ucsColumn - 1];
+                            double? valSI = ConvertToSI(val, unitChoice);
+                            propertiesTable[i].UnconfinedCompressiveStrength =
+                                PseudoConstructors.ConstructGaussianDrillingProperty(valSI);
+                        }
+                    }
+                    //Confined Compressive Strength
+                    if (pressureColumn != null && pressureUnit != null)
+                    {
+                        UnitChoice unitChoice = pressureDictUnits[pressureUnit];
+                        for (int i = 0; i < maxRows; i++)
+                        {
+                            double? val = valueData[i][(int)pressureColumn - 1];
+                            double? valSI = ConvertToSI(val, unitChoice);
+                            propertiesTable[i].PressureDifferential =
+                                PseudoConstructors.ConstructGaussianDrillingProperty(valSI);
+                        }
+                    }
+                    //Porosity
+                    if (porosityColumn != null && porosityUnit != null)
+                    {
+                        UnitChoice unitChoice = porosityDictUnits[porosityUnit];
+                        for (int i = 0; i < maxRows; i++)
+                        {
+                            double? val = valueData[i][(int)porosityColumn - 1];
+                            double? valSI = ConvertToSI(val, unitChoice);
+                            propertiesTable[i].Porosity =
+                                PseudoConstructors.ConstructGaussianDrillingProperty(valSI);
+                        }
+                    }
+                    //Permeability
+                    if (permeabilityColumn != null && permeabilityUnit != null)
+                    {
+                        UnitChoice unitChoice = permeabilityDictUnits[permeabilityUnit];
+                        for (int i = 0; i < maxRows; i++)
+                        {
+                            double? val = valueData[i][(int)permeabilityColumn - 1];
+                            double? valSI = ConvertToSI(val, unitChoice);
+                            propertiesTable[i].Permeability =
+                                PseudoConstructors.ConstructGaussianDrillingProperty(valSI);
+                        }
+                    }
+                    //MeasuredDepth
+                    if (measuredDepthColumn != null && measuredDepthUnit != null)
+                    {
+                        UnitChoice unitChoice = depthDictUnits[measuredDepthUnit];
+                        for (int i = 0; i < maxRows; i++)
+                        {
+                            double? val = valueData[i][(int)measuredDepthColumn - 1];
+                            double? valSI = ConvertToSI(val, unitChoice);
+                            propertiesTable[i].MeasuredDepth =
+                                PseudoConstructors.ConstructGaussianDrillingProperty(valSI);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    logger.LogWarning("Table not loaded correctly");
+                    Snackbar.Add("Table not loaded correctly", Severity.Warning);
+                }
+            }
+        }
+    }
+    private double? ConvertToSI(double? val, UnitChoice unitChoice)
+    {
+        double? valSI;
+        if (val == null)
+        {
+            valSI = null;
+        }
+        else
+        {
+            valSI = unitChoice.ToSI((double)val);
+        }
+        return valSI;
+    }
+
+    private void HideShowTable()
+    {
+        showTable = !showTable;
+        if (showTable)
+        {
+            showTableText = "Hide";
+        }
+        else
+        {
+            showTableText = "Show";
+        }
+    }
+
+
+
+
+}

@@ -1,0 +1,996 @@
+@inject ILogger<MudInputWithUnitAdornment> logger
+@inject ISnackbar Snackbar
+@if (GeologicalPropertiesInterpolationCaseID != null && Parent != null)
+{
+    <MudPaper Class="my-1 mx-1 py-4" Style="@($"background:{DataUtils.FLOATING_COLOUR};")">
+        <MudPaper Class="my-4 mx-2 py-2">
+            <MudToolBar>
+                <MudText Class="my-4 mx-2 py-2" Typo="Typo.h6">
+                    View Data
+                </MudText>
+                <MudSpacer />
+                <MudButton StartIcon="@Icons.Material.Outlined.Close" IconColor="@Color.Error"
+                           OnClick="@ClosePanel">Close</MudButton>
+            </MudToolBar>
+            <MudPaper Class="my-4 mx-2 py-2" Style="@($"background:{DataUtils.FLOATING_COLOUR_DEEP};")">
+                <MudGrid Class="my-4 mx-2 py-2">
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.body1"><b>Name:</b></MudText>
+                        <MudText Typo="Typo.body1">@currentGeologicalPropertiesInterpolationCase.Name</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.body1"><b>Description:</b></MudText>
+                        <MudText Typo="Typo.body1">@currentGeologicalPropertiesInterpolationCase.Description</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.body1"><b>Creation Date:</b></MudText>
+                        <MudText Typo="Typo.body1">@currentGeologicalPropertiesInterpolationCase.CreationDate.ToString()</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.body1"><b>Last Modification Date:</b></MudText>
+                        <MudText Typo="Typo.body1">@currentGeologicalPropertiesInterpolationCase.LastModificationDate.ToString()</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Field:</b></MudText>
+                        <MudText Typo="Typo.body1">@((_selectedField == null) ? string.Empty : _selectedField.Name)</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Cluster:</b></MudText>
+                        <MudText Typo="Typo.body1">@((_selectedCluster == null) ? string.Empty : _selectedCluster.Name)</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Well:</b></MudText>
+                        <MudText Typo="Typo.body1">@((_selectedWell == null) ? string.Empty : _selectedWell.Name)</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Wellbore:</b></MudText>
+                        <MudText Typo="Typo.body1">@((_selectedWellBore == null) ? string.Empty : _selectedWellBore.Name)</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudText Typo="Typo.body1"><b>Geo. Prop.:</b></MudText>
+                        <MudText Typo="Typo.body1">@((_selectedGeologicalProperties == null) ? string.Empty : _selectedGeologicalProperties.Name)</MudText>
+                    </MudItem>
+                </MudGrid>
+                @* Charts *@
+                <MudPaper Class="my-4 mx-2 py-2">
+                    <MudToolBar>
+                        <MudText Class="my-4 mx-2 py-2" Typo="Typo.h6">
+                            Charts
+                        </MudText>
+                        <MudSpacer />
+                        <MudButton StartIcon="@Icons.Material.Filled.SsidChart" IconColor="@Color.Primary"
+                                   OnClick="@HideShowChart">@showChartText</MudButton>
+                    </MudToolBar>
+                    <MudCollapse Expanded="@showChart">
+                        <MudToolBar>
+                            <MudSpacer />
+                            <MudPaper Class="pl-3 ml-3" Height="20px" Width="20px" Style="@($"background:{interpolatedColor};")" />
+                            <MudText Class="px-1 mx-1"> Interpolated data </MudText>
+                            <MudPaper Class="pl-3 ml-3" Height="20px" Width="20px" Style="@($"background:{extrapolatedColor};")" />
+                            <MudText Class="px-1 mx-1"> Extrapolated data </MudText>
+                            <MudSpacer />
+                        </MudToolBar>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <PlotlyChart @bind-Config="config" @bind-Layout="layoutInternalFrictionAngle" @bind-Data="dataInternalFrictionAngle" @ref="chartInternalFrictionAngle" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <PlotlyChart @bind-Config="config" @bind-Layout="layoutPorosity" @bind-Data="dataPorosity" @ref="chartPorosity" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <PlotlyChart @bind-Config="config" @bind-Layout="layoutPermeability" @bind-Data="dataPermeability" @ref="chartPermeability" />
+                            </MudItem>
+                        </MudGrid>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <PlotlyChart @bind-Config="config" @bind-Layout="layoutUCS" @bind-Data="dataUCS" @ref="chartUCS" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <PlotlyChart @bind-Config="config" @bind-Layout="layoutPressure" @bind-Data="dataPressure" @ref="chartPressure" />
+                            </MudItem>
+                            <MudItem xs="4">
+                                <PlotlyChart @bind-Config="config" @bind-Layout="layoutCCS" @bind-Data="dataCCS" @ref="chartCCS" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCollapse>
+                </MudPaper>
+                <MudPaper Class="my-4 mx-2 py-2">
+                    <MudToolBar>
+                        <MudText Class="my-4 mx-2 py-2" Typo="Typo.h6">
+                            Table
+                        </MudText>
+                        <MudSpacer />
+                        <MudButton StartIcon="@Icons.Material.Filled.TableChart" IconColor="@Color.Primary"
+                                   OnClick="@HideShowTable">@showTableText</MudButton>
+                    </MudToolBar>
+                    <MudCollapse Expanded="@showTable">
+                        <MudToolBar>
+                            <MudSpacer />
+                            <MudPaper Class="pl-3 ml-3" Height="20px" Width="20px" Style="@($"background:{interpolatedColor};")" />
+                            <MudText Class="px-1 mx-1"> Interpolated data </MudText>
+                            <MudPaper Class="pl-3 ml-3" Height="20px" Width="20px" Style="@($"background:{extrapolatedColor};")" />
+                            <MudText Class="px-1 mx-1"> Extrapolated data </MudText>
+                            <MudSpacer />
+                        </MudToolBar>
+                        <MudTable Class="my-4 mx-2 py-2" T="GeologicalPropertyEntry" Items="@completeTable" Dense="true" RowStyleFunc="@RowStyleFunc">
+                            <HeaderContent>
+                                <MudTh>Measured Depth [@(Parent.GetUnitLabel("DepthDrilling"))]</MudTh>
+                                <MudTh>Internal Friction Angle [@(Parent.GetUnitLabel("PlaneAngleDrilling"))]</MudTh>
+                                <MudTh>Porosity</MudTh>
+                                <MudTh>Permeability [@(Parent.GetUnitLabel("PorousMediumPermeabilityDrilling"))]</MudTh>
+                                <MudTh>UCS [@(Parent.GetUnitLabel("FormationStrengthDrilling"))]</MudTh>
+                                <MudTh>Pressure Differential [@(Parent.GetUnitLabel("PressureDrilling"))]</MudTh>
+                                <MudTh>CCS [@(Parent.GetUnitLabel("FormationStrengthDrilling"))]</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@PrepareForTable(context.MeasuredDepth, "DepthDrilling")</MudTd>
+                                <MudTd>@PrepareForTable(context.InternalFrictionAngle, "PlaneAngleDrilling")</MudTd>
+                                <MudTd>@PrepareForTable(context.Porosity, "Porosity")</MudTd>
+                                <MudTd>@PrepareForTable(context.Permeability, "PorousMediumPermeabilityDrilling")</MudTd>
+                                <MudTd>@PrepareForTable(context.UnconfinedCompressiveStrength, "FormationStrengthDrilling")</MudTd>
+                                <MudTd>@PrepareForTable(context.PressureDifferential, "PressureDrilling")</MudTd>
+                                <MudTd>@PrepareForTable(context.ConfinedCompressiveStrength, "FormationStrengthDrilling")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCollapse>
+                </MudPaper>
+            </MudPaper>
+        </MudPaper>
+    </MudPaper>
+}
+
+
+@code {
+    [CascadingParameter]
+    private MudTheme? Theme { get; set; } = null;
+    [CascadingParameter]
+    private MudUnitAndReferenceChoiceTag? Parent { get; set; }
+    [Parameter]
+    public Guid? GeologicalPropertiesInterpolationCaseID { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Field>? Fields { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Cluster>? Clusters { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Well>? Wells { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, WellBore>? WellBores { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, GeologicalPropertiesLight>? GeologicalProperties { get; set; } = null;
+    // Communicate with parent component
+    [Parameter]
+    public EventCallback ValueChanged { get; set; }
+
+    private Field? _selectedField = null;
+    private Cluster? _selectedCluster = null;
+    private Well? _selectedWell = null;
+    private WellBore? _selectedWellBore = null;
+    private GeologicalPropertiesLight? _selectedGeologicalProperties = null;
+
+    //Data
+    private GeologicalPropertiesInterpolationCase currentGeologicalPropertiesInterpolationCase = PseudoConstructors.ConstructGeologicalPropertiesInterpolationCase();
+    private List<GeologicalPropertyEntry> geologicalPropertyInterpolatedTable = PseudoConstructors.ConstructGeologicalPropertiesTableList();
+    private bool hasInterpolation = false;
+    private List<GeologicalPropertyEntry> geologicalPropertyExtrapolatedTable = PseudoConstructors.ConstructGeologicalPropertiesTableList();
+    private bool hasExtrapolation = false;
+    private List<GeologicalPropertyEntry> completeTable = PseudoConstructors.ConstructGeologicalPropertiesTableList();
+
+    private List<object> measuredDepthInterpolatedData = new();
+    private List<object> internalFrictionAngleInterpolatedData = new();
+    private List<object> porosityInterpolatedData = new();
+    private List<object> ccsInterpolatedData = new();
+    private List<object> ucsInterpolatedData = new();
+    private List<object> pressureInterpolatedData = new();
+    private List<object> permeabilityInterpolatedData = new();
+
+    private List<object> measuredDepthExtrapolatedData = new();
+    private List<object> internalFrictionAngleExtrapolatedData = new();
+    private List<object> porosityExtrapolatedData = new();
+    private List<object> ccsExtrapolatedData = new();
+    private List<object> ucsExtrapolatedData = new();
+    private List<object> pressureExtrapolatedData = new();
+    private List<object> permeabilityExtrapolatedData = new();
+
+    private string interpolatedColor = "rgba(50, 50, 240, 0.5)";
+    private string extrapolatedColor = "rgba(50, 240, 50, 0.5)";
+
+    private Config? config = null;
+    private bool showChart = true;
+    private string showChartText = "Hide";
+    private bool showTable = false;
+    private string showTableText = "Show";
+
+    //Internal friction angle charts
+    private PlotlyChart? chartInternalFrictionAngle = null;
+    private Layout layoutInternalFrictionAngle = new Layout
+    {
+        Height = 500,
+        Width = 300,
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Measured Depth" },
+                AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed
+            }
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "Internal Friction Angle" },
+            }
+        },
+        ShowLegend = false,
+        PaperBgColor = "rgba(200, 200, 200, 0.0)",
+        Font = new Font
+        {
+            Size = 12
+        }
+    };
+    IList<ITrace> dataInternalFrictionAngle = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+            Mode = ModeFlag.Markers,
+            Line = new Line
+                {
+                    Color = "black",   // Color of connecting line if Mode includes Lines
+                    Width = 2
+                },
+            X = new List<object>{},
+            Y = new List<object>{}
+        }
+    };
+    //Porosity charts
+    private PlotlyChart? chartPorosity = null;
+    private Layout layoutPorosity = new Layout
+    {
+        Height = 500,
+        Width = 300,
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Measured Depth" },
+                AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed
+            }
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "Porosity" },
+            }
+        },
+        ShowLegend = false,
+        PaperBgColor = "rgba(200, 200, 200, 0.0)",
+        Font = new Font
+        {
+            Size = 12
+        }
+    };
+    IList<ITrace> dataPorosity = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+            Mode = ModeFlag.Markers,
+            Line = new Line
+                {
+                    Color = "black",   // Color of connecting line if Mode includes Lines
+                    Width = 2
+                },
+            X = new List<object>{},
+            Y = new List<object>{}
+        }
+    };
+    //Permeability charts
+    private PlotlyChart? chartPermeability = null;
+    private Layout layoutPermeability = new Layout
+    {
+        Height = 500,
+        Width = 300,
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Measured Depth" },
+                AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed
+            }
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "Permeability" },
+            }
+        },
+        ShowLegend = false,
+        PaperBgColor = "rgba(200, 200, 200, 0.0)",
+        Font = new Font
+        {
+            Size = 12
+        }
+    };
+    IList<ITrace> dataPermeability = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+            Mode = ModeFlag.Markers,
+            Line = new Line
+                {
+                    Color = "black",   // Color of connecting line if Mode includes Lines
+                    Width = 2
+                },
+            X = new List<object>{},
+            Y = new List<object>{}
+        }
+    };
+    //UCS charts
+    private PlotlyChart? chartUCS = null;
+    private Layout layoutUCS = new Layout
+    {
+        Height = 500,
+        Width = 300,
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Measured Depth" },
+                AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed
+            }
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "UCS" },
+            }
+        },
+        ShowLegend = false,
+        PaperBgColor = "rgba(200, 200, 200, 0.0)",
+        Font = new Font
+        {
+            Size = 12
+        }
+    };
+    IList<ITrace> dataUCS = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+            Mode = ModeFlag.Markers,
+            Line = new Line
+                {
+                    Color = "black",   // Color of connecting line if Mode includes Lines
+                    Width = 2
+                },
+            X = new List<object>{},
+            Y = new List<object>{}
+        }
+    };
+    //Pressure charts
+    private PlotlyChart? chartPressure = null;
+    private Layout layoutPressure = new Layout
+    {
+        Height = 500,
+        Width = 300,
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Measured Depth" },
+                AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed
+            }
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "UCS" },
+            }
+        },
+        ShowLegend = false,
+        PaperBgColor = "rgba(200, 200, 200, 0.0)",
+        Font = new Font
+        {
+            Size = 12
+        }
+    };
+    IList<ITrace> dataPressure = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+            Mode = ModeFlag.Markers,
+            Line = new Line
+                {
+                    Color = "black",   // Color of connecting line if Mode includes Lines
+                    Width = 2
+                },
+            X = new List<object>{},
+            Y = new List<object>{}
+        }
+    };
+    // CCS charts
+    private PlotlyChart? chartCCS = null;
+    private Layout layoutCCS = new Layout
+    {
+        Height = 500,
+        Width = 300,
+
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Measured Depth" },
+                AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed
+            }
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "UCS" },
+            }
+        },
+        ShowLegend = false,
+        PaperBgColor = "rgba(200, 200, 200, 0.0)",
+        Font = new Font
+        {
+            Size = 12
+        }
+    };
+    IList<ITrace> dataCCS = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+            Mode = ModeFlag.Markers,
+            Line = new Line
+                {
+                    Color = "black",   // Color of connecting line if Mode includes Lines
+                    Width = 2
+                },
+            X = new List<object>{},
+            Y = new List<object>{}
+        }
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (GeologicalPropertiesInterpolationCaseID != null)
+        {
+            try
+            {
+                //Load geological properties if ID is available
+                currentGeologicalPropertiesInterpolationCase = (GeologicalPropertiesInterpolationCase)await APIUtils.ClientGeologicalProperties.
+                    GetGeologicalPropertiesInterpolationCaseByIdAsync((Guid)GeologicalPropertiesInterpolationCaseID);
+                if (currentGeologicalPropertiesInterpolationCase != null)
+                {
+                    Guid? caseGeoPropID = currentGeologicalPropertiesInterpolationCase.GeologicalPropertiesID;
+                    if (caseGeoPropID != null && caseGeoPropID != Guid.Empty)
+                    {
+                        GeologicalPropertiesLight? geologicalProperties = null;
+                        if (GeologicalProperties != null)
+                        {
+                            foreach (var gplKPV in GeologicalProperties)
+                            {
+                                if (gplKPV.Value != null && gplKPV.Value.MetaInfo != null && gplKPV.Value.MetaInfo.ID == currentGeologicalPropertiesInterpolationCase.GeologicalPropertiesID)
+                                {
+                                    geologicalProperties = gplKPV.Value;
+                                    break;
+                                }
+                            }
+                        }
+                        if (geologicalProperties != null && geologicalProperties.WellBoreID != null && geologicalProperties.WellBoreID != Guid.Empty)
+                        {
+                            _selectedGeologicalProperties = geologicalProperties;
+                            WellBore wellBore = await APIUtils.ClientWellBore.GetWellBoreByIdAsync(geologicalProperties.WellBoreID.Value);
+                            if (wellBore != null && wellBore.WellID != null && wellBore.WellID != Guid.Empty)
+                            {
+                                _selectedWellBore = wellBore;
+                                Well well = await APIUtils.ClientWell.GetWellByIdAsync(wellBore.WellID.Value);
+                                if (well != null && well.ClusterID != null && well.ClusterID != Guid.Empty)
+                                {
+                                    _selectedWell = well;
+                                    Cluster cluster = await APIUtils.ClientCluster.GetClusterByIdAsync(well.ClusterID.Value);
+                                    if (cluster != null && cluster.FieldID != null && cluster.FieldID != Guid.Empty)
+                                    {
+                                        if (cluster.ReferenceDepth != null && cluster.ReferenceDepth.GaussianValue != null && cluster.ReferenceDepth.GaussianValue.Mean != null)
+                                        {
+                                            DataUtils.UnitAndReferenceParameters.WellHeadDepthReferenceSource.WellHeadDepthReference = cluster.ReferenceDepth.GaussianValue.Mean;
+                                        }
+                                        // if (cluster.RotaryTableDepth != null && cluster.RotaryTableDepth.DiracDistributionValue != null && cluster.RotaryTableDepth.DiracDistributionValue.Value != null)
+                                        // {
+                                        //     DataUtils.UnitAndReferenceParameters.RotaryTableDepthReferenceSource.RotaryTableDepthReference = cluster.RotaryTableDepth.DiracDistributionValue.Value;
+                                        // }
+                                        if (cluster.GroundMudLineDepth != null && cluster.GroundMudLineDepth.GaussianValue != null && cluster.GroundMudLineDepth.GaussianValue.Mean != null)
+                                        {
+                                            DataUtils.UnitAndReferenceParameters.GroundMudLineDepthReferenceSource.GroundMudLineDepthReference = cluster.GroundMudLineDepth.GaussianValue.Mean;
+                                        }
+                                        if (cluster.TopWaterDepth != null && cluster.TopWaterDepth.GaussianValue != null && cluster.TopWaterDepth.GaussianValue.Mean != null)
+                                        {
+                                            DataUtils.UnitAndReferenceParameters.SeaWaterLevelDepthReferenceSource.SeaWaterLevelDepthReference = cluster.TopWaterDepth.GaussianValue.Mean;
+                                        }
+                                        if (!cluster.IsSingleWell)
+                                        {
+                                            _selectedCluster = cluster;
+                                        }
+                                        Field field = await APIUtils.ClientField.GetFieldByIdAsync(cluster.FieldID.Value);
+                                        if (field != null)
+                                        {
+                                            _selectedField = field;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    hasInterpolation = currentGeologicalPropertiesInterpolationCase.GeologicalPropertyInterpolatedTable != null;
+                    if (hasInterpolation && currentGeologicalPropertiesInterpolationCase.GeologicalPropertyInterpolatedTable != null && currentGeologicalPropertiesInterpolationCase.GeologicalPropertyInterpolatedTable is List<GeologicalPropertyEntry> list1)
+                    {
+                        geologicalPropertyInterpolatedTable = list1;
+                    }
+                    hasExtrapolation = currentGeologicalPropertiesInterpolationCase.GeologicalPropertyExtrapolatedTable != null;
+                    if (hasExtrapolation && currentGeologicalPropertiesInterpolationCase.GeologicalPropertyExtrapolatedTable != null && currentGeologicalPropertiesInterpolationCase.GeologicalPropertyExtrapolatedTable is List<GeologicalPropertyEntry> list2)
+                    {
+                        geologicalPropertyExtrapolatedTable = list2;
+                    }
+                }
+                CreateFullTable();
+                LoadPlotData();
+            }//Close try get currentGeologicalProperties
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Impossible to load geological properties Interpolation Case from client");
+            }
+        }//Close if GeologicalPropertiesID != null
+    }//Close OnParametersSetAsync
+    private void CreateFullTable()
+    {
+        completeTable.Clear();
+        if (hasInterpolation)
+        {
+            completeTable = completeTable.Concat(geologicalPropertyInterpolatedTable).ToList();
+        }
+        if (hasExtrapolation)
+        {
+            completeTable = completeTable.Concat(geologicalPropertyExtrapolatedTable).ToList();
+        }
+        completeTable = completeTable.OrderBy(o => o.MeasuredDepth.GaussianValue.Mean).ToList();
+
+    }
+    private string PrepareForTable(GaussianDrillingProperty value, string unitName)
+    {
+        double? outVal = ConversionsFromOSDC.GaussianToDouble(value);
+        if (outVal == null || Parent == null)
+        {
+            return "";
+        }
+        else
+        {
+            double unformatedDouble = Parent.FromSI((double)outVal, unitName);
+            double formatedDouble = Math.Round(1000.0 * unformatedDouble) / 1000.0;//(double) ( ((int) (unformatedDouble * 100) )/100.0);
+            return formatedDouble.ToString();
+        }
+    }
+    private Func<GeologicalPropertyEntry, int, string> RowStyleFunc => (x, i) =>
+    {
+        string style = "";
+        switch (x.DataType)
+        {
+            case GeologicalPropertyTableOrigin.Interpolated:
+                {
+                    style += "background-color:" + interpolatedColor;
+                    break;
+                }
+            case GeologicalPropertyTableOrigin.Extrapolated:
+                {
+                    style += "background-color:" + extrapolatedColor;
+                    break;
+                }
+
+        }
+        return style;
+    };
+    private object? PrepareForChart(GaussianDrillingProperty value, string unitName)
+    {
+        double? valueDouble = ConversionsFromOSDC.GaussianToDouble(value);
+        if (valueDouble == null || Parent == null)
+        {
+            return null;
+        }
+        else
+        {
+            return (object)Parent.FromSI((double)valueDouble, unitName);
+        }
+    }
+    private void LoadPlotData()
+    {
+        if (Parent != null)
+        {
+            //Clear old lists
+            //Interpolated data
+            measuredDepthInterpolatedData.Clear();
+            internalFrictionAngleInterpolatedData.Clear();
+            porosityInterpolatedData.Clear();
+            ccsInterpolatedData.Clear();
+            ucsInterpolatedData.Clear();
+            pressureInterpolatedData.Clear();
+            permeabilityInterpolatedData.Clear();
+            //Extrapolated data
+            measuredDepthExtrapolatedData.Clear();
+            internalFrictionAngleExtrapolatedData.Clear();
+            porosityExtrapolatedData.Clear();
+            ccsExtrapolatedData.Clear();
+            ucsExtrapolatedData.Clear();
+            pressureExtrapolatedData.Clear();
+            permeabilityExtrapolatedData.Clear();
+
+            //Clear charts
+            if (chartInternalFrictionAngle != null)
+            {
+                chartInternalFrictionAngle.Clear();
+            }
+            if (chartPorosity != null)
+            {
+                chartPorosity.Clear();
+            }
+            if (chartPermeability != null)
+            {
+                chartPermeability.Clear();
+            }
+            if (chartUCS != null)
+            {
+                chartUCS.Clear();
+            }
+            if (chartCCS != null)
+            {
+                chartCCS.Clear();
+            }
+            if (chartPressure != null)
+            {
+                chartPressure.Clear();
+            }
+
+            if (hasInterpolation)
+            {
+                foreach (GeologicalPropertyEntry values in geologicalPropertyInterpolatedTable)
+                {
+                    object? obj = null;
+                    obj = PrepareForChart(values.MeasuredDepth, "DepthDrilling");
+                    if (obj != null)
+                    {
+                        measuredDepthInterpolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.InternalFrictionAngle, "PlaneAngleDrilling");
+                    if (obj != null)
+                    {
+                        internalFrictionAngleInterpolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.Porosity, "Porosity");
+                    if (obj != null)
+                    {
+                        porosityInterpolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.ConfinedCompressiveStrength, "FormationStrengthDrilling");
+                    if (obj != null)
+                    {
+                        ccsInterpolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.UnconfinedCompressiveStrength, "FormationStrengthDrilling");
+                    if (obj != null)
+                    {
+                        ucsInterpolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.PressureDifferential, "PressureDrilling");
+                    if (obj != null)
+                    {
+                        pressureInterpolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.Permeability, "PorousMediumPermeabilityDrilling");
+                    if (obj != null)
+                    {
+                        permeabilityInterpolatedData.Add(obj);
+                    }
+                }
+            }
+            if (hasExtrapolation)
+            {
+                foreach (GeologicalPropertyEntry values in geologicalPropertyExtrapolatedTable)
+                {
+                    object? obj = null;
+                    obj = PrepareForChart(values.MeasuredDepth, "DepthDrilling");
+                    if (obj != null)
+                    {
+                        measuredDepthExtrapolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.InternalFrictionAngle, "PlaneAngleDrilling");
+                    if (obj != null)
+                    {
+                        internalFrictionAngleExtrapolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.Porosity, "Porosity");
+                    if (obj != null)
+                    {
+                        porosityExtrapolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.ConfinedCompressiveStrength, "FormationStrengthDrilling");
+                    if (obj != null)
+                    {
+                        ccsExtrapolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.UnconfinedCompressiveStrength, "FormationStrengthDrilling");
+                    if (obj != null)
+                    {
+                        ucsExtrapolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.PressureDifferential, "PressureDrilling");
+                    if (obj != null)
+                    {
+                        pressureExtrapolatedData.Add(obj);
+                    }
+                    obj = PrepareForChart(values.Permeability, "PorousMediumPermeabilityDrilling");
+                    if (obj != null)
+                    {
+                        permeabilityExtrapolatedData.Add(obj);
+                    }
+                }
+            }
+            //Update chart data
+            if (hasInterpolation)
+            {
+                if (chartInternalFrictionAngle != null)
+                {
+                    chartInternalFrictionAngle.AddTrace(
+                    new Scatter
+                        {
+                            Mode = ModeFlag.Markers,
+                            Line = new Line { Color = interpolatedColor, Width = 1 },
+                            Marker = new Marker { Size = 5 },
+                            X = internalFrictionAngleInterpolatedData, // X-coordinate (e.g., in data units or paper units)
+                            Y = measuredDepthInterpolatedData, // Y-coordinate
+                        }
+                    );
+                }
+                if (chartPorosity != null)
+                {
+                    chartPorosity.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = interpolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = porosityInterpolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthInterpolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartPermeability != null)
+                {
+                    chartPermeability.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = interpolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = permeabilityInterpolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthInterpolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartUCS != null)
+                {
+                    chartUCS.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = interpolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = ucsInterpolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthInterpolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartPressure != null)
+                {
+                    chartPressure.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = interpolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = pressureInterpolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthInterpolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartCCS != null)
+                {
+                    chartCCS.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = interpolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = ccsInterpolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthInterpolatedData, // Y-coordinate
+                            }
+                    );
+                }
+            }
+            if (hasExtrapolation)
+            {
+                if (chartInternalFrictionAngle != null)
+                {
+                    chartInternalFrictionAngle.AddTrace(
+                    new Scatter
+                        {
+                            Mode = ModeFlag.Markers,
+                            Line = new Line { Color = extrapolatedColor, Width = 1 },
+                            Marker = new Marker { Size = 5 },
+                            X = internalFrictionAngleExtrapolatedData, // X-coordinate (e.g., in data units or paper units)
+                            Y = measuredDepthExtrapolatedData, // Y-coordinate
+                        }
+                    );
+                }
+                if (chartPorosity != null)
+                {
+                    chartPorosity.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = extrapolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = porosityExtrapolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthExtrapolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartPermeability != null)
+                {
+                    chartPermeability.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = extrapolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = permeabilityExtrapolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthExtrapolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartUCS != null)
+                {
+                    chartUCS.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = extrapolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = ucsExtrapolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthExtrapolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartPressure != null)
+                {
+                    chartPressure.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = extrapolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = pressureExtrapolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthExtrapolatedData, // Y-coordinate
+                            }
+                    );
+                }
+                if (chartCCS != null)
+                {
+                    chartCCS.AddTrace(
+                        new Scatter
+                            {
+                                Mode = ModeFlag.Markers,
+                                Line = new Line { Color = extrapolatedColor, Width = 1 },
+                                Marker = new Marker { Size = 5 },
+                                X = ccsExtrapolatedData, // X-coordinate (e.g., in data units or paper units)
+                                Y = measuredDepthExtrapolatedData, // Y-coordinate
+                            }
+                    );
+                }
+            }
+            //Update chart axis
+            layoutInternalFrictionAngle.XAxis[0].Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+                {
+                    Text = "Internal Friction Angle [" + Parent.GetUnitLabel("PlaneAngleDrilling") + "]",
+                };
+            layoutInternalFrictionAngle.YAxis[0].Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                {
+                    Text = "Measured Depth [" + Parent.GetUnitLabel("DepthDrilling") + "]",
+                };
+            //layoutPorosity.XAxis[0].Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+            //{
+            //    Text = "Porosity [" + Parent.GetUnitLabel("Porosity") + "]",
+            //};
+            layoutPorosity.YAxis[0].Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                {
+                    Text = "Measured Depth [" + Parent.GetUnitLabel("DepthDrilling") + "]",
+                };
+
+            layoutPermeability.XAxis[0].Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+                {
+                    Text = "Permeability [" + Parent.GetUnitLabel("PorousMediumPermeabilityDrilling") + "]",
+                };
+            layoutPermeability.YAxis[0].Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                {
+                    Text = "Measured Depth [" + Parent.GetUnitLabel("DepthDrilling") + "]",
+                };
+
+            layoutUCS.XAxis[0].Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+                {
+                Text = "UCS [" + Parent.GetUnitLabel("FormationStrengthDrilling") + "]",
+                };
+            layoutUCS.YAxis[0].Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                {
+                    Text = "Measured Depth [" + Parent.GetUnitLabel("DepthDrilling") + "]",
+                };
+
+            layoutPressure.XAxis[0].Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+                {
+                    Text = "ΔP [" + Parent.GetUnitLabel("PressureDrilling") + "]",
+                };
+            layoutPressure.YAxis[0].Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                {
+                    Text = "Measured Depth [" + Parent.GetUnitLabel("DepthDrilling") + "]",
+                };
+
+            layoutCCS.XAxis[0].Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+                {
+                Text = "CCS [" + Parent.GetUnitLabel("FormationStrengthDrilling") + "]",
+                };
+            layoutCCS.YAxis[0].Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                {
+                    Text = "Measured Depth [" + Parent.GetUnitLabel("DepthDrilling") + "]",
+                };
+        }
+    }
+    private async Task SendMessage()
+    {
+        await ValueChanged.InvokeAsync();
+    }
+    private async Task ClosePanel()
+    {
+        await SendMessage();
+    }
+    private void HideShowChart()
+    {
+        showChart = !showChart;
+        if (showChart)
+        {
+            showChartText = "Hide";
+        }
+        else
+        {
+            showChartText = "Show";
+        }
+    }
+    private void HideShowTable()
+    {
+        showTable = !showTable;
+        if (showTable)
+        {
+            showTableText = "Hide";
+        }
+        else
+        {
+            showTableText = "Show";
+        }
+    }
+
+}

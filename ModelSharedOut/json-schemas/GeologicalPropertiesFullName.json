@@ -1,0 +1,749 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Service, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "version": "1.0"
+  },
+  "paths": {
+    "/GeologicalProperties": {
+      "get": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "GetAllGeologicalPropertiesId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "PostGeologicalProperties",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/GeologicalProperties/MetaInfo": {
+      "get": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "GetAllGeologicalPropertiesMetaInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.DataManagement.MetaInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GeologicalProperties/{id}": {
+      "get": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "GetGeologicalPropertiesById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "PutGeologicalPropertiesById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "DeleteGeologicalPropertiesById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/GeologicalProperties/LightData": {
+      "get": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "GetAllGeologicalPropertiesLight",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesLight"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GeologicalProperties/HeavyData": {
+      "get": {
+        "tags": [
+          "GeologicalProperties"
+        ],
+        "operationId": "GetAllGeologicalProperties",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalProperties"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GeologicalPropertiesInterpolationCase": {
+      "get": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "GetAllGeologicalPropertiesInterpolationCaseId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "PostGeologicalPropertiesInterpolationCase",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/GeologicalPropertiesInterpolationCase/MetaInfo": {
+      "get": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "GetAllGeologicalPropertiesInterpolationCaseMetaInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.DataManagement.MetaInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GeologicalPropertiesInterpolationCase/{id}": {
+      "get": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "GetGeologicalPropertiesInterpolationCaseById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "PutGeologicalPropertiesInterpolationCaseById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "DeleteGeologicalPropertiesInterpolationCaseById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/GeologicalPropertiesInterpolationCase/LightData": {
+      "get": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "GetAllGeologicalPropertiesInterpolationCaseLight",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCaseLight"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GeologicalPropertiesInterpolationCase/HeavyData": {
+      "get": {
+        "tags": [
+          "GeologicalPropertiesInterpolationCase"
+        ],
+        "operationId": "GetAllGeologicalPropertiesInterpolationCase",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertiesInterpolationCase"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GeologicalProperties.Model.ExtrapolationProperties": {
+        "type": "object",
+        "properties": {
+          "Extrapolate": {
+            "type": "boolean"
+          },
+          "ExtrapolationStep": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "UsedDataRange": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "DepthRange": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeologicalProperties.Model.GeologicalProperties": {
+        "type": "object",
+        "properties": {
+          "MetaInfo": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.DataManagement.MetaInfo"
+          },
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Description": {
+            "type": "string",
+            "nullable": true
+          },
+          "CreationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModificationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "WellBoreID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "TrajectoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "IsPrognosed": {
+            "type": "boolean"
+          },
+          "GeologicalPropertyTable": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertyEntry"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeologicalProperties.Model.GeologicalPropertiesInterpolationCase": {
+        "type": "object",
+        "properties": {
+          "MetaInfo": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.DataManagement.MetaInfo"
+          },
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Description": {
+            "type": "string",
+            "nullable": true
+          },
+          "CreationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModificationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "GeologicalPropertiesID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "GeologicalPropertyInterpolatedTable": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertyEntry"
+            },
+            "nullable": true
+          },
+          "GeologicalPropertyExtrapolatedTable": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertyEntry"
+            },
+            "nullable": true
+          },
+          "InterpolationProperties": {
+            "$ref": "#/components/schemas/GeologicalProperties.Model.InterpolationProperties"
+          },
+          "ExtrapolationProperties": {
+            "$ref": "#/components/schemas/GeologicalProperties.Model.ExtrapolationProperties"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeologicalProperties.Model.GeologicalPropertiesInterpolationCaseLight": {
+        "type": "object",
+        "properties": {
+          "MetaInfo": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.DataManagement.MetaInfo"
+          },
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Description": {
+            "type": "string",
+            "nullable": true
+          },
+          "CreationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModificationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "GeologicalPropertiesID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeologicalProperties.Model.GeologicalPropertiesLight": {
+        "type": "object",
+        "properties": {
+          "MetaInfo": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.DataManagement.MetaInfo"
+          },
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Description": {
+            "type": "string",
+            "nullable": true
+          },
+          "CreationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModificationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "WellBoreID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "TrajectoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "IsPrognosed": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeologicalProperties.Model.GeologicalPropertyEntry": {
+        "type": "object",
+        "properties": {
+          "InternalFrictionAngle": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "UnconfinedCompressiveStrength": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "ConfinedCompressiveStrength": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "PressureDifferential": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "Porosity": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "Permeability": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "MeasuredDepth": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty"
+          },
+          "DataType": {
+            "$ref": "#/components/schemas/GeologicalProperties.Model.GeologicalPropertyTableOrigin"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeologicalProperties.Model.GeologicalPropertyTableOrigin": {
+        "enum": [
+          "Measured",
+          "Interpolated",
+          "Extrapolated"
+        ],
+        "type": "string"
+      },
+      "GeologicalProperties.Model.InterpolationProperties": {
+        "type": "object",
+        "properties": {
+          "Interpolate": {
+            "type": "boolean"
+          },
+          "InterpolationStep": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OSDC.DotnetLibraries.Drilling.DrillingProperties.GaussianDrillingProperty": {
+        "type": "object",
+        "properties": {
+          "GaussianValue": {
+            "$ref": "#/components/schemas/OSDC.DotnetLibraries.General.Statistics.GaussianDistribution"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OSDC.DotnetLibraries.General.DataManagement.MetaInfo": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "HttpHostName": {
+            "type": "string",
+            "nullable": true
+          },
+          "HttpHostBasePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "HttpEndPoint": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OSDC.DotnetLibraries.General.Statistics.GaussianDistribution": {
+        "type": "object",
+        "properties": {
+          "MinValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "MaxValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "Mean": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "StandardDeviation": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

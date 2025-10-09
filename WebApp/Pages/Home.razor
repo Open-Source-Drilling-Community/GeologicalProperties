@@ -1,0 +1,123 @@
+@page "/Home"
+<MudText Class="mx-4 px-4 ym-4 pm-4" Typo="Typo.h2">Home</MudText>  
+<MudDivider Class="mb-4 pb-4"/>
+<MudText Class="mx-4 px-4 ym-4 pm-4" Typo="Typo.h5">Introduction</MudText>
+<MudText Class="mx-6 px-6 ym-4 pm-4" Typo="Typo.body1">
+<p>
+    This microservice is responsible for handling geological properties along the well trajectory. 
+The structure of the service consists of a table with the <b>measured depth</b>, <b>porosity</b>, <b>permeability</b>, <b>internal friction angle</b>,
+<b>unconfined compressive strength</b> and the local <b>pressure difference</b>.
+</p>
+<br/>
+<p>
+On the service level, the <b>confined compressive strength</b> is calculated with the available unconfined compressive strench, local pressure difference and the internal friction angle.
+In addition, the service offers the option to interpolate between available points by using a linear polynomial and to linearly extrapolate the available points with the
+least square method.
+</p>
+</MudText>
+
+<MudDivider Class="my-4 py-4"/>
+<MudText Class="mx-4 px-4 ym-4 pm-4" Typo="Typo.h5">Data Input</MudText>
+<MudText Class="mx-6 px-6 ym-4 pm-4" Typo="Typo.body1">
+<p>
+There are two available methods to input data. The first, is to manually fill the table, as shown below. Whenever filling the table, the user is given the option
+to interpolate between points or to extrapolate. Whenever it interpolates, it is necessary to inform the interpolation step. In the case of the extrapolation, it is necessary
+to inform the step of the new data generated, the measured depth for calibration and up to which depth it is to be predicted.  
+</p>
+<p>
+In the tutorial below, a simple table, with just three entries is created. Before that, the user enables the interpolation with a step of 20 metres and the extrapolation.
+For the extrapolation, the start of the calculations is set to 300 metres, which means that all measured depths larger than 300 metres will be used for the least square method. 
+Finally, the data will be extrapolated up to a depth of 1200 metres.
+</p>
+</MudText>
+ <MudStack Spacing="2" Class="my-4 py-4">
+    <MudButton Class="shades-text text-white"
+        Variant="Variant.Filled"
+        Style="@($"background:{HideColors(showAddTutorial)};")"
+        OnClick="ShowHideAddTutorial">@(showAddTutorial ? "Hide add table tutorial" : "Show add table tutorial")        
+    </MudButton>
+    <MudCollapse Expanded="showAddTutorial">                
+        <center>
+            <video width="960" height="540" autoplay loop muted>
+                <source src="videos/addGeoProperties.webm" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
+        </center>
+    </MudCollapse>
+</MudStack>
+<MudText Class="mx-6 px-6 ym-4 pm-4" Typo="Typo.body1">
+<p>
+The second input method consists in uploading a .csv file. In this case, the prefered separator is ";". When the file is uploaded, the user must 
+provide which column contains the relevant information and which unit was used. By default, the SI units are pre-selected.
+</p>
+</MudText>
+ <MudStack Spacing="2" Class="my-4 py-4">
+    <MudButton Class="shades-text text-white"
+        Variant="Variant.Filled"
+        Style="@($"background:{HideColors(showUploadTutorial)};")"
+        OnClick="ShowHideUploadTutorial">@(showUploadTutorial ? "Hide add table tutorial" : "Show add table tutorial")        
+    </MudButton>
+    <MudCollapse Expanded="showUploadTutorial">                
+        <center>
+            <video width="960" height="540" autoplay loop muted>
+                <source src="videos/uploadGeoProperties.webm" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
+        </center>
+    </MudCollapse>
+</MudStack>
+<MudDivider Class="my-4 py-4"/>
+<MudText Class="mx-4 px-4 ym-4 pm-4" Typo="Typo.h5">Data Visualization</MudText>
+<MudText Class="mx-6 px-6 ym-4 pm-4" Typo="Typo.body1">
+<p>
+Data visualization is straightforward. After the data has been uploaded, the <b>View</b> <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/> option in the main page.
+When it is opened, the meta data is provided and the input is displayed through graphics and a table. In the graphic, the large circles provide the actual input, the small blue markers, 
+the interpolated data and the green data the extrapolated set of points. 
+</p>
+</MudText>
+ <MudStack Spacing="2" Class="my-4 pt-4 pb-10">
+    <MudButton Class="shades-text text-white"
+        Variant="Variant.Filled"
+        Style="@($"background:{HideColors(showViewTutorial)};")"
+        OnClick="ShowHideViewTutorial">@(showViewTutorial ? "Hide add table tutorial" : "Show add table tutorial")        
+    </MudButton>
+    <MudCollapse Expanded="showViewTutorial">                
+        <center>
+            <video width="960" height="540" autoplay loop muted>
+                <source src="videos/viewGeoProperties.webm" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
+        </center>
+    </MudCollapse>
+</MudStack>
+
+
+@code{
+    private bool showAddTutorial = true;
+    private bool showUploadTutorial = true;
+    private bool showViewTutorial = true;
+
+    private void ShowHideAddTutorial()
+    {
+        showAddTutorial = !showAddTutorial;
+    }
+    private void ShowHideUploadTutorial()
+    {
+        showUploadTutorial = !showUploadTutorial;
+    }
+    private void ShowHideViewTutorial()
+    {
+        showUploadTutorial = !showUploadTutorial;
+    }
+    private string HideColors(bool expandBool)
+    {
+        if (expandBool)
+        {
+            return Colors.Indigo.Lighten1;
+        }
+        else
+        {
+            return Colors.Indigo.Darken4;            
+        }
+    }
+}

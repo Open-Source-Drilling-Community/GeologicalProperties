@@ -1,0 +1,331 @@
+﻿@page "/GeologicalProperties"
+@inject ILogger<GeologicalPropertiesMain> logger
+@inject ISnackbar Snackbar
+
+<MudUnitAndReferenceChoiceTag HttpHost=@APIUtils.HostNameUnitConversion
+                              HttpBasePath=@APIUtils.HostBasePathUnitConversion
+                              HttpController="UnitSystem/"
+                              UnitSystemName="@DataUtils.UnitAndReferenceParameters.UnitSystemName"
+                              UnitSystemNameChanged="@DataUtils.UpdateUnitSystemName">
+    @if (geologicalPropertiesList == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <MudCollapse Expanded="@(showMainPanel)">
+            <MudDataGrid T="GeologicalProperties" MultiSelection="true" Items="@geologicalPropertiesList" SelectedItemsChanged="@SelectedItemsChanged"
+                         Hover="true"
+                         SortMode="SortMode.Multiple" QuickFilter="@_geologicalPropertiesFilter" Filterable="false"
+                         ReadOnly="false" ColumnResizeMode="ResizeMode.Column" Elevation="0">
+                <ToolBarContent>
+                    <MudText Class="mx-2 px-2" Typo="Typo.h6">Geological Properties</MudText>
+                    <MudButton OnClick="@AddGeologicalProperties"
+                               StartIcon="@Icons.Material.Outlined.Add"
+                               IconColor="@Color.Success" Class="add-item-btn">
+                        Add
+                    </MudButton>
+                    <MudButton OnClick="@DeleteSelectedGeologicalProperties"
+                               StartIcon="@Icons.Material.Outlined.Delete"
+                               IconColor="@Color.Error" Class="add-item-btn">
+                        Delete
+                    </MudButton>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchString" Placeholder="Search"
+                                  Adornment="Adornment.Start"
+                                  Immediate="true"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium" Class="mt-0">
+                    </MudTextField>
+                </ToolBarContent>
+                <Columns>
+                    <SelectColumn T="GeologicalProperties" />
+                    <PropertyColumn Property="x => x.Name" Title="@DataUtils.GeologicalPropertiesNameLabel" CellStyle="width: 25%;" Sortable="true" Editable="false" />
+                    <PropertyColumn Property="x => x.Description" Title="@DataUtils.GeologicalPropertiesDescrLabel" CellStyle="width: 45%;" Sortable="true" Editable="false" />
+                    <PropertyColumn Property="x => (wellBoreDicts == null || x.WellBoreID == null || x.WellBoreID == Guid.Empty || !wellBoreDicts.ContainsKey(x.WellBoreID.Value) || wellBoreDicts[x.WellBoreID.Value] == null) ? string.Empty : wellBoreDicts[x.WellBoreID.Value].Name"
+                                    Title="Wellbore" Sortable="true" Filterable="false" />
+                    <TemplateColumn CellClass="d-flex justify-end">
+                        <CellTemplate>
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Filled.RemoveRedEye" OnClick="(() => ViewGeologicalProperties(context.Item.MetaInfo.ID))" />
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="(() => EditGeologicalProperties(context.Item.MetaInfo.ID))" />
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Delete" OnClick="(() => DeleteGeologicalProperties(context.Item.MetaInfo.ID))" />
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="GeologicalProperties" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudCollapse>
+    }
+    @if (showAddPanel)
+    {
+        <MudCollapse Expanded="@(showAddPanel)">
+            <GeologicalPropertiesAdd ShowPanel="@(showAddPanel)"
+                                     Fields="@fieldDicts"
+                                     Clusters="@clusterDicts"
+                                     Wells="@wellDicts"
+                                     WellBores="@wellBoreDicts"
+                                     ValueChanged="@HandleAddPanel" GeologicalPropertiesID="@geologicalPropertiesID" />
+        </MudCollapse>
+    }
+    @if (showViewPanel)
+    {
+        <MudCollapse Expanded="@(showViewPanel)">
+            <GeologicalPropertiesView GeologicalPropertiesID="@geologicalPropertiesID"
+                                      Fields="@fieldDicts"
+                                      Clusters="@clusterDicts"
+                                      Wells="@wellDicts"
+                                      WellBores="@wellBoreDicts"
+                                      ValueChanged="@HandleViewPanel" />
+        </MudCollapse>
+    }
+
+</MudUnitAndReferenceChoiceTag>
+
+@code {
+    // GeologicalProperties related variables
+    private List<GeologicalProperties> geologicalPropertiesList = new();
+    private List<GeologicalProperties> selectedGeologicalPropertiesList = new();
+    private List<object?>? inputDataList = new(); // container used to pass input data to the GeologicalPropertiesEdit razor component without specifying content types (required by µservice Template)
+    // Permeability related variables
+    private Guid? geologicalPropertiesID = null;
+
+    // Create dictionaries to collect the Guid and Name of auxiliary fields
+    private Dictionary<Guid, Field> fieldDicts = new();
+    private Dictionary<Guid, Cluster> clusterDicts = new();
+    private Dictionary<Guid, Well> wellDicts = new();
+    private Dictionary<Guid, WellBore> wellBoreDicts = new();
+
+    // UI related variables
+    private bool showAddPanel = false;
+    private bool showMainPanel = true;
+    private bool showViewPanel = false;
+    private string? _searchString;
+    [Inject] private IDialogService? DialogService { get; set; } = null;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Show main panel
+            // Starting all loading tasks asynchronously
+            logger.LogInformation("Trying to load list of Permeability from client: " + APIUtils.HttpClientGeologicalProperties);
+            logger.LogInformation("Trying to load list of GeologicalProperties from client: " + APIUtils.HostNameGeologicalProperties);
+            var geologicalPropertiesTask = APIUtils.ClientGeologicalProperties.GetAllGeologicalPropertiesAsync();
+
+            List<Task> loadingTaskList = new List<Task> { geologicalPropertiesTask };
+
+            // Awaiting tasks and retrieve results as they become available
+            while (loadingTaskList.Count > 0)
+            {
+                Task finishedTask = await Task.WhenAny(loadingTaskList);
+                if (finishedTask == geologicalPropertiesTask)
+                {
+                    try
+                    {
+                        geologicalPropertiesList = (List<GeologicalProperties>)await geologicalPropertiesTask; // awaiting the finished task allows to retrieve its result and throw exception if needed
+                        if (geologicalPropertiesList != null)
+                        {
+                            geologicalPropertiesList.Sort((t1, t2) => t1.Name.CompareTo(t2.Name));
+                        }
+                        else
+                        {
+                            logger.LogWarning("Returned list of GeologicalProperties were null on initialization");
+                            Snackbar.Add("Returned list of GeologicalProperties were null on initialization", Severity.Warning);
+                        }
+                    }
+                    catch (ApiException ex)
+                    {
+                        logger.LogError(ex, "Impossible to load GeologicalProperties from client");
+                    }
+                }
+
+                loadingTaskList.Remove(finishedTask);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Problem GeologicalProperties initialization");
+        }
+        try
+        {
+            // get guid and name from external microservices
+            ICollection<Field> fields = await APIUtils.ClientField.GetAllFieldAsync();
+            foreach (Field field in fields)
+            {
+                if (!fieldDicts.ContainsKey(field.MetaInfo.ID))
+                {
+                    fieldDicts.Add(field.MetaInfo.ID, field);
+                }
+            }
+            ICollection<Cluster> clusters = await APIUtils.ClientCluster.GetAllClusterAsync();
+            foreach (Cluster cluster in clusters)
+            {
+                if (!clusterDicts.ContainsKey(cluster.MetaInfo.ID))
+                {
+                    clusterDicts.Add(cluster.MetaInfo.ID, cluster);
+                }
+            }
+            ICollection<Well> wells = await APIUtils.ClientWell.GetAllWellAsync();
+            foreach (Well well in wells)
+            {
+                if (!wellDicts.ContainsKey(well.MetaInfo.ID))
+                {
+                    wellDicts.Add(well.MetaInfo.ID, well);
+                }
+            }
+            ICollection<WellBore> wellBores = await APIUtils.ClientWellBore.GetAllWellBoreAsync();
+            foreach (WellBore wellBore in wellBores)
+            {
+                if (!wellBoreDicts.ContainsKey(wellBore.MetaInfo.ID))
+                {
+                    wellBoreDicts.Add(wellBore.MetaInfo.ID, wellBore);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to load microservices");
+        }
+        await InvokeAsync(() => { StateHasChanged(); });
+    }
+    private async Task HandleAddPanel()
+    {
+        await OnInitializedAsync();
+        showAddPanel = false;
+        showMainPanel = true;
+        showViewPanel = false;
+    }
+    private async Task HandleViewPanel()
+    {
+        showAddPanel = false;
+        showMainPanel = true;
+        showViewPanel = false;
+        await Task.Delay(1);
+    }
+    private void AddGeologicalProperties()
+    {
+        showAddPanel = true;
+        showMainPanel = false;
+        showViewPanel = false;
+        geologicalPropertiesID = null;
+    }
+    private void EditGeologicalProperties(Guid id)
+    {
+        showViewPanel = false;
+        showAddPanel = true;
+        showMainPanel = false;
+        geologicalPropertiesID = id;
+    }
+    private void ViewGeologicalProperties(Guid id)
+    {
+        showAddPanel = false;
+        showViewPanel = true;
+        showMainPanel = false;
+        geologicalPropertiesID = id;
+    }
+    private async Task<bool> ConfirmDeletion()
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        IDialogReference? dialog = null;
+        DialogResult? result = null;
+        if (DialogService != null)
+        {
+            dialog = await DialogService.ShowAsync<DialogDeleteTemplate>("DELETE", options);
+            if (dialog != null)
+            {
+                result = await dialog.Result;
+            }
+        }
+        StateHasChanged();
+        if (result == null)
+        {
+            return false;
+        }
+        else
+        {
+            return (!result.Canceled);
+        }
+    }
+    private async Task DeleteGeologicalProperties(Guid id)
+    {
+        try
+        {
+            if (await ConfirmDeletion())
+            {
+                await APIUtils.ClientGeologicalProperties.DeleteGeologicalPropertiesByIdAsync(id);
+                await OnInitializedAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to delete GeologicalProperties");
+        }
+    }
+
+    private async Task DeleteSelectedGeologicalProperties()
+    {
+        try
+        {
+            if (await ConfirmDeletion())
+            {
+                foreach (GeologicalProperties geologicalProperties in selectedGeologicalPropertiesList)
+                {
+                    await APIUtils.ClientGeologicalProperties.DeleteGeologicalPropertiesByIdAsync(geologicalProperties.MetaInfo.ID);
+                }
+            }
+            await OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to delete all GeologicalProperties");
+        }
+
+    }
+
+    //Quick filter - filter gobally across multiple columns with the same input
+    private Func<GeologicalProperties, bool>
+    _geologicalPropertiesFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if ($"{x.Name} {x.Description}".Contains(_searchString))
+            return true;
+
+        return false;
+    };
+
+    //Events
+    private void StartedEditingItem(GeologicalProperties item)
+    {
+        //Activating Edit event capture with parameter StartedEditingItem="@StartedEditingItem" in MudDataGrid; arguments are specified in OnClick="@context.Actions.StartedEditingItem(...)"
+    }
+
+    private void CancelledEditingItem(GeologicalProperties item)
+    {
+        //Activating Cancel event capture with parameter CancelledEditingItem = "@CancelledEditingItem" in MudDataGrid; arguments are specified in OnClick="@context.Actions.CancelledEditingItem(...)"
+    }
+
+    private void CommittedItemChanges(GeologicalProperties item)
+    {
+        //Activating Commit event capture with parameter CommittedItemChanges = "@CommittedItemChanges" in MudDataGrid; arguments are specified in OnClick="@context.Actions.CommittedEditingItem(...)"
+    }
+
+    void SelectedItemsChanged(HashSet<GeologicalProperties>
+        items)
+    {
+        selectedGeologicalPropertiesList.Clear();
+        selectedGeologicalPropertiesList.InsertRange(0, items);
+    }
+
+    private async void ShowMainPanel()
+    {
+        showAddPanel = true;
+        await OnInitializedAsync();
+    }
+}

@@ -1,0 +1,357 @@
+﻿@inject ILogger<MudInputWithUnitAdornment> logger
+@inject ISnackbar Snackbar
+
+<MudPaper Class="my-1 mx-1 py-4" Style="@($"background:{DataUtils.FLOATING_COLOUR};")">
+    <MudPaper Class="my-4 mx-2" Style="@($"background:{DataUtils.FLOATING_COLOUR_DEEP};")">
+        <MudText Class="mx-4 px-4 ym-2" Typo="Typo.h6"><b>Geological Properties</b></MudText>
+        <MudDivider />
+        <MudPaper Class="my-4 mx-2 py-2">
+            <MudGrid Class="my-4 mx-2 py-2">
+                <MudItem xs="4">
+                    <MudText Typo="Typo.body1"><b>Name</b></MudText>
+                    <MudTextField @bind-Value="@currentGeologicalPropertiesInterpolationCase.Name" />
+                </MudItem>
+                <MudItem xs="8">
+                    <MudText Typo="Typo.body1"><b>Description</b></MudText>
+                    <MudTextField @bind-Value="@currentGeologicalPropertiesInterpolationCase.Description" />
+                </MudItem>
+                @if (Fields != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Field" @bind-Value="@_selectedField" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var fieldKPV in Fields)
+                            {
+                                if (fieldKPV.Key != Guid.Empty && fieldKPV.Value != null && !string.IsNullOrEmpty(fieldKPV.Value.Name))
+                                {
+                                    <MudSelectItem Value="@fieldKPV.Value">@fieldKPV.Value.Name</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (Clusters != null && _selectedField != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Cluster" @bind-Value="@_selectedCluster" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var clusterKVP in Clusters.Where(x => (x.Value != null && x.Value.FieldID != null && _selectedField != null && _selectedField.MetaInfo != null && _selectedField.MetaInfo.ID == x.Value.FieldID && !x.Value.IsSingleWell)))
+                            {
+                                <MudSelectItem Value="@clusterKVP.Value">@clusterKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (Wells != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Well" @bind-Value="@_selectedWell" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var wellKVP in Wells.Where(x => (x.Value != null && ((x.Value.ClusterID != null && _selectedCluster != null && _selectedCluster.MetaInfo != null && _selectedCluster.MetaInfo.ID == x.Value.ClusterID && !x.Value.IsSingleWell) || (x.Value.IsSingleWell)))))
+                            {
+                                <MudSelectItem Value="@wellKVP.Value">@wellKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (WellBores != null && _selectedWell != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Wellbore" @bind-Value="@_selectedWellBore" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var wellBoreKVP in WellBores.Where(x => (x.Value != null && x.Value.WellID != null && _selectedWell != null && _selectedWell.MetaInfo != null && _selectedWell.MetaInfo.ID == x.Value.WellID)))
+                            {
+                                <MudSelectItem Value="@wellBoreKVP.Value">@wellBoreKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+                @if (GeologicalProperties != null && _selectedWellBore != null)
+                {
+                    <MudItem xs="2">
+                        <MudSelect Label="Geo. Prop." @bind-Value="@_selectedGeologicalProperties" Dense="true" ToStringFunc="@(s => s?.Name)">
+                            @foreach (var geoPropKVP in GeologicalProperties.Where(x => (x.Value != null && x.Value.WellBoreID != null && _selectedWellBore != null && _selectedWellBore.MetaInfo != null && _selectedWellBore.MetaInfo.ID == x.Value.WellBoreID)))
+                            {
+                                <MudSelectItem Value="@geoPropKVP.Value">@geoPropKVP.Value.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="2" />
+                }
+
+            </MudGrid>
+        </MudPaper>
+        <MudPaper Class="my-4 mx-2 py-2">
+            <MudText Class="mx-4 px-4 ym-2" Typo="Typo.h6"><b>Post-Processing</b></MudText>
+            @* Interpolation control *@
+            <MudToolBar Class="my-4 mx-2 py-2 align-end">
+                <MudSwitch Class="mx-4 " @bind-Value="@interpolationProperties.Interpolate"
+                           Color="Color.Primary" UncheckedColor="Color.Secondary" Label="Interpolate" />
+                @if (interpolationProperties.Interpolate)
+                {
+                    <MudGrid Class="mx-4 ">
+                        <MudItem xs="2">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Step"
+                                                       QuantityName="Length"
+                                                       SIValueNullable="@interpolationProperties.InterpolationStep"
+                                                       SIValueNullableChanged="val => { UpdateInterpolationStep(val); }" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudToolBar>
+            @* Extrapolation control *@
+            <MudToolBar Class="my-4 mx-2 py-2 align-end">
+                <MudSwitch Class="mx-4 " @bind-Value="@extrapolationProperties.Extrapolate"
+                           Color="Color.Primary" UncheckedColor="Color.Secondary" Label="Extrapolate" />
+                @if (extrapolationProperties.Extrapolate)
+                {
+                    <MudGrid Class="mx-4 ">
+                        <MudItem xs="2">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Step"
+                                                       QuantityName="Length"
+                                                       SIValueNullable="@extrapolationProperties.ExtrapolationStep"
+                                                       SIValueNullableChanged="val => { UpdateExtrapolationStep(val); }" />
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Start Extrapolation"
+                                                       QuantityName="Length"
+                                                       SIValueNullable="@extrapolationProperties.UsedDataRange"
+                                                       SIValueNullableChanged="val => { UpdateExtrapolationStartRange(val); }" />
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudInputWithUnitAdornment VariantType="Variant.Text"
+                                                       QuantityLabel="Maximum Depth"
+                                                       QuantityName="Length"
+                                                       SIValueNullable="@extrapolationProperties.DepthRange"
+                                                       SIValueNullableChanged="val => { UpdateExtrapolationEndRange(val); }" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudToolBar>
+        </MudPaper>
+        <MudToolBar>
+            @if (GeologicalPropertiesInterpolationCaseID != null)
+            {
+                <MudButton StartIcon="@Icons.Material.Outlined.Save" IconColor="@Color.Primary"
+                           OnClick="@SaveGeologicalPropertiesInterpolationCase">Save</MudButton>
+            }
+            <MudButton StartIcon="@Icons.Material.Outlined.SaveAs" IconColor="@Color.Primary"
+                       OnClick="@SaveAsGeologicalPropertiesInterpolationCase">Save New</MudButton>
+            <MudSpacer />
+            <MudButton StartIcon="@Icons.Material.Outlined.Close" IconColor="@Color.Error"
+                       OnClick="@ClosePanel">Close</MudButton>
+        </MudToolBar>
+    </MudPaper>
+</MudPaper>
+
+@code {
+    [CascadingParameter]
+    private MudUnitAndReferenceChoiceTag? Parent { get; set; }
+    [Parameter]
+    public bool ShowPanel { get; set; } = false;
+    [Parameter]
+    public Guid? GeologicalPropertiesInterpolationCaseID { get; set; } = null;
+    // Comunicate with parent component
+    [Parameter]
+    public EventCallback ValueChanged { get; set; }
+    [Parameter]
+    public Dictionary<Guid, Field>? Fields { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Cluster>? Clusters { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, Well>? Wells { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, WellBore>? WellBores { get; set; } = null;
+    [Parameter]
+    public Dictionary<Guid, GeologicalPropertiesLight>? GeologicalProperties { get; set; } = null;
+
+    private Field? _selectedField = null;
+    private Cluster? _selectedCluster = null;
+    private Well? _selectedWell = null;
+    private WellBore? _selectedWellBore = null;
+    private GeologicalPropertiesLight? _selectedGeologicalProperties = null;
+
+    //Geological property instance
+    private GeologicalPropertiesInterpolationCase currentGeologicalPropertiesInterpolationCase = PseudoConstructors.ConstructGeologicalPropertiesInterpolationCase();
+    //Interpolation properties
+    private InterpolationProperties interpolationProperties = PseudoConstructors.ConstructInterpolationProperties();
+    private ExtrapolationProperties extrapolationProperties = PseudoConstructors.ConstructExtrapolationProperties();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ShowPanel)
+        {
+            if (GeologicalPropertiesInterpolationCaseID != null)
+            {
+                try
+                {
+                    //Load geological properties if ID is available
+                    currentGeologicalPropertiesInterpolationCase = (GeologicalPropertiesInterpolationCase)await APIUtils.ClientGeologicalProperties.
+                        GetGeologicalPropertiesInterpolationCaseByIdAsync((Guid)GeologicalPropertiesInterpolationCaseID);
+                    if (currentGeologicalPropertiesInterpolationCase != null)
+                    {
+                        Guid? caseGeoPropID = currentGeologicalPropertiesInterpolationCase.GeologicalPropertiesID;
+                        if (caseGeoPropID != null && caseGeoPropID != Guid.Empty)
+                        {
+                            GeologicalPropertiesLight? geologicalProperties = null;
+                            if (GeologicalProperties != null)
+                            {
+                                foreach (var gplKPV in GeologicalProperties)
+                                {
+                                    if (gplKPV.Value != null && gplKPV.Value.MetaInfo != null && gplKPV.Value.MetaInfo.ID == currentGeologicalPropertiesInterpolationCase.GeologicalPropertiesID)
+                                    {
+                                        geologicalProperties = gplKPV.Value;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (geologicalProperties != null && geologicalProperties.WellBoreID != null && geologicalProperties.WellBoreID != Guid.Empty)
+                            {
+                                _selectedGeologicalProperties = geologicalProperties;
+                                WellBore wellBore = await APIUtils.ClientWellBore.GetWellBoreByIdAsync(geologicalProperties.WellBoreID.Value);
+                                if (wellBore != null && wellBore.WellID != null && wellBore.WellID != Guid.Empty)
+                                {
+                                    _selectedWellBore = wellBore;
+                                    Well well = await APIUtils.ClientWell.GetWellByIdAsync(wellBore.WellID.Value);
+                                    if (well != null && well.ClusterID != null && well.ClusterID != Guid.Empty)
+                                    {
+                                        _selectedWell = well;
+                                        Cluster cluster = await APIUtils.ClientCluster.GetClusterByIdAsync(well.ClusterID.Value);
+                                        if (cluster != null && cluster.FieldID != null && cluster.FieldID != Guid.Empty)
+                                        {
+                                            if (cluster.ReferenceDepth != null && cluster.ReferenceDepth.GaussianValue != null && cluster.ReferenceDepth.GaussianValue.Mean != null)
+                                            {
+                                                DataUtils.UnitAndReferenceParameters.WellHeadDepthReferenceSource.WellHeadDepthReference = cluster.ReferenceDepth.GaussianValue.Mean;
+                                            }
+                                            // if (cluster.RotaryTableDepth != null && cluster.RotaryTableDepth.DiracDistributionValue != null && cluster.RotaryTableDepth.DiracDistributionValue.Value != null)
+                                            // {
+                                            //     DataUtils.UnitAndReferenceParameters.RotaryTableDepthReferenceSource.RotaryTableDepthReference = cluster.RotaryTableDepth.DiracDistributionValue.Value;
+                                            // }
+                                            if (cluster.GroundMudLineDepth != null && cluster.GroundMudLineDepth.GaussianValue != null && cluster.GroundMudLineDepth.GaussianValue.Mean != null)
+                                            {
+                                                DataUtils.UnitAndReferenceParameters.GroundMudLineDepthReferenceSource.GroundMudLineDepthReference = cluster.GroundMudLineDepth.GaussianValue.Mean;
+                                            }
+                                            if (cluster.TopWaterDepth != null && cluster.TopWaterDepth.GaussianValue != null && cluster.TopWaterDepth.GaussianValue.Mean != null)
+                                            {
+                                                DataUtils.UnitAndReferenceParameters.SeaWaterLevelDepthReferenceSource.SeaWaterLevelDepthReference = cluster.TopWaterDepth.GaussianValue.Mean;
+                                            }
+                                            if (!cluster.IsSingleWell)
+                                            {
+                                                _selectedCluster = cluster;
+                                            }
+                                            Field field = await APIUtils.ClientField.GetFieldByIdAsync(cluster.FieldID.Value);
+                                            if (field != null)
+                                            {
+                                                _selectedField = field;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        interpolationProperties = currentGeologicalPropertiesInterpolationCase.InterpolationProperties;
+                        extrapolationProperties = currentGeologicalPropertiesInterpolationCase.ExtrapolationProperties;
+                    }//currentGeologicalPropertiesInterpolationCase != null
+                }//Close try get currentGeologicalPropertiesInterpolationCase
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Impossible to load geological properties Interpolation Case from client");
+                }
+
+            }//Close if GeologicalPropertiesInterpolationCaseID != null
+        }//Close if show panel
+    }//Close OnParametersSetAsync
+
+    private async Task ClosePanel()
+    {
+        ShowPanel = false;
+        await SendMessage();
+    }
+
+    private async Task SaveAsGeologicalPropertiesInterpolationCase()
+    {
+        try
+        {
+            currentGeologicalPropertiesInterpolationCase.MetaInfo = new MetaInfo { ID = Guid.NewGuid() };
+            currentGeologicalPropertiesInterpolationCase.InterpolationProperties = interpolationProperties;
+            currentGeologicalPropertiesInterpolationCase.ExtrapolationProperties = extrapolationProperties;
+            currentGeologicalPropertiesInterpolationCase.GeologicalPropertiesID = (_selectedGeologicalProperties != null && _selectedGeologicalProperties.MetaInfo != null && _selectedGeologicalProperties.MetaInfo.ID != Guid.Empty) ? _selectedGeologicalProperties.MetaInfo.ID : null;
+            await APIUtils.ClientGeologicalProperties.PostGeologicalPropertiesInterpolationCaseAsync(currentGeologicalPropertiesInterpolationCase);
+            logger.LogInformation("Geological properties Interpolation Case posted successfully");
+            Snackbar.Add("Geological properties Interpolation Case posted successfully", Severity.Success);
+            ShowPanel = false;
+            await SendMessage();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to add a new geological properties Interpolation Case component");
+            Snackbar.Add("Impossible to add a new geological properties Interpolation Case component", Severity.Warning);
+        }
+    }
+    private async Task SaveGeologicalPropertiesInterpolationCase()
+    {
+        try
+        {
+            currentGeologicalPropertiesInterpolationCase.LastModificationDate = DateTimeOffset.UtcNow;
+            currentGeologicalPropertiesInterpolationCase.InterpolationProperties = interpolationProperties;
+            currentGeologicalPropertiesInterpolationCase.ExtrapolationProperties = extrapolationProperties;
+            currentGeologicalPropertiesInterpolationCase.GeologicalPropertiesID = (_selectedGeologicalProperties != null && _selectedGeologicalProperties.MetaInfo != null && _selectedGeologicalProperties.MetaInfo.ID != Guid.Empty) ? _selectedGeologicalProperties.MetaInfo.ID : null;
+            await APIUtils.ClientGeologicalProperties.PutGeologicalPropertiesInterpolationCaseByIdAsync(currentGeologicalPropertiesInterpolationCase.MetaInfo.ID, currentGeologicalPropertiesInterpolationCase);
+            logger.LogInformation("Geological properties Interpolation Case updated successfully");
+            Snackbar.Add("Geological properties Interpolation Case updated successfully", Severity.Success);
+            ShowPanel = false;
+            await SendMessage();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Impossible to update geological properties Interpolation Case component");
+            Snackbar.Add("Impossible to update geological properties Interpolation Case component", Severity.Warning);
+        }
+    }
+
+    //Send message to parent component
+    private async Task SendMessage()
+    {
+        await ValueChanged.InvokeAsync();
+    }
+
+    //Update unit system
+    private void ManageUnits() { }
+
+    private void UpdateInterpolationStep(double? val)
+    {
+        interpolationProperties.InterpolationStep = val;
+    }
+
+    private void UpdateExtrapolationStep(double? val)
+    {
+        extrapolationProperties.ExtrapolationStep = val;
+    }
+
+    private void UpdateExtrapolationStartRange(double? val)
+    {
+        extrapolationProperties.UsedDataRange = val;
+    }
+    private void UpdateExtrapolationEndRange(double? val)
+    {
+        extrapolationProperties.DepthRange = val;
+    }
+}
