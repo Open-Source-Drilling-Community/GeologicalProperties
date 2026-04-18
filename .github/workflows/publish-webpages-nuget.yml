@@ -1,0 +1,46 @@
+name: Publish WebPages NuGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to publish
+        required: true
+        type: string
+  push:
+    tags:
+      - webpages-v*
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Resolve package version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "package_version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            VERSION="${GITHUB_REF_NAME#webpages-v}"
+            echo "package_version=$VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore
+        run: dotnet restore WebPages/WebPages.csproj
+
+      - name: Build
+        run: dotnet build WebPages/WebPages.csproj --configuration Release --no-restore
+
+      - name: Pack
+        run: dotnet pack WebPages/WebPages.csproj --configuration Release --no-build -p:PackageVersion=${{ steps.version.outputs.package_version }} --output artifacts
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push "artifacts/NORCE.Drilling.GeologicalProperties.WebPages.${{ steps.version.outputs.package_version }}.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"

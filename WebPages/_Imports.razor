@@ -7,9 +7,9 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
+@using Microsoft.Extensions.Logging
 @using GeologicalProperties = GeologicalPropertiesApp.GeologicalProperties.ModelShared.GeologicalProperties
 @using GeologicalPropertiesApp.GeologicalProperties.ModelShared
-@using WebApp.Shared
 @using NORCE.Drilling.GeologicalProperties.WebPages
 @using NORCE.Drilling.GeologicalProperties.WebPages.Components
 @using NORCE.Drilling.GeologicalProperties.WebPages.Pages
@@ -25,3 +25,4 @@
 @using Plotly.Blazor.LayoutLib
 @using Plotly.Blazor.LayoutLib.YAxisLib
 @using Plotly.Blazor.LayoutLib.XAxisLib
+@inject NORCE.Drilling.GeologicalProperties.WebPages.IGeologicalPropertiesAPIUtils APIUtils

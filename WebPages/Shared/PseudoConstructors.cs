@@ -1,11 +1,15 @@
+using GPModel = GeologicalPropertiesApp.GeologicalProperties.ModelShared.GeologicalProperties;
 using GeologicalPropertiesApp.GeologicalProperties.ModelShared;
+
+namespace NORCE.Drilling.GeologicalProperties.WebPages.Shared;
+
 class PseudoConstructors
 {
-    public static GeologicalProperties ConstructGeologicalProperties()
+    public static GPModel ConstructGeologicalProperties()
     {
         MetaInfo metaInfo = new MetaInfo { ID = Guid.NewGuid() };
         DateTimeOffset creationDate = DateTimeOffset.UtcNow;
-        return new GeologicalProperties()
+        return new GPModel()
         {
             MetaInfo = metaInfo,
             Name = "Geological Properties",
@@ -40,6 +44,7 @@ class PseudoConstructors
             InterpolationStep = null
         };
     }
+
     public static ExtrapolationProperties ConstructExtrapolationProperties()
     {
         return new ExtrapolationProperties
@@ -51,7 +56,7 @@ class PseudoConstructors
         };
     }
 
-    public static  GaussianDrillingProperty ConstructGaussianDrillingProperty(double? val)
+    public static GaussianDrillingProperty ConstructGaussianDrillingProperty(double? val)
     {
         return new GaussianDrillingProperty
         {
@@ -61,6 +66,7 @@ class PseudoConstructors
             }
         };
     }
+
     public static GeologicalPropertyEntry ConstructGeologicalPropertyEntry()
     {
         return new GeologicalPropertyEntry()
@@ -75,10 +81,11 @@ class PseudoConstructors
             DataType = GeologicalPropertyTableOrigin.Measured
         };
     }
+
     public static List<GeologicalPropertyEntry> ConstructGeologicalPropertiesTableList()
     {
         return new List<GeologicalPropertyEntry>
-        {   
+        {
             ConstructGeologicalPropertyEntry()
         };
     }

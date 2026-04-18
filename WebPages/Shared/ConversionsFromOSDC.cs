@@ -1,9 +1,11 @@
 using GeologicalPropertiesApp.GeologicalProperties.ModelShared;
+
+namespace NORCE.Drilling.GeologicalProperties.WebPages.Shared;
+
 public class ConversionsFromOSDC
 {
     public static double? GaussianToDouble(GaussianDrillingProperty? val)
     {
-
         if (val == null)
         {
             return null;
@@ -28,16 +30,13 @@ public class ConversionsFromOSDC
             }
         }
     }
+
     public static GaussianDrillingProperty DoubleToGaussian(double? val)
-    {          
+    {
         GaussianDrillingProperty gaussValue = new GaussianDrillingProperty()
         {
-            GaussianValue = new GaussianDistribution(){Mean = val}
+            GaussianValue = new GaussianDistribution() { Mean = val }
         };
         return gaussValue;
     }
-
-
-
-
 }

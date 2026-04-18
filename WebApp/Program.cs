@@ -1,5 +1,7 @@
 using MudBlazor;
 using MudBlazor.Services;
+using NORCE.Drilling.GeologicalProperties.WebApp;
+using NORCE.Drilling.GeologicalProperties.WebPages;
 using Plotly.Blazor.Traces.SankeyLib;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,24 +21,24 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+var webPagesConfiguration = new WebPagesHostConfiguration
+{
+    FieldHostURL = builder.Configuration["FieldHostURL"],
+    ClusterHostURL = builder.Configuration["ClusterHostURL"],
+    WellHostURL = builder.Configuration["WellHostURL"],
+    WellBoreHostURL = builder.Configuration["WellBoreHostURL"],
+    GeologicalPropertiesHostURL = builder.Configuration["GeologicalPropertiesHostURL"],
+    UnitConversionHostURL = builder.Configuration["UnitConversionHostURL"]
+};
+
+builder.Services.AddSingleton<IGeologicalPropertiesWebPagesConfiguration>(webPagesConfiguration);
+builder.Services.AddSingleton<IGeologicalPropertiesAPIUtils, GeologicalPropertiesAPIUtils>();
+
 var app = builder.Build();
 
 app.UseForwardedHeaders();
 // This needs to match with what is defined in "charts/<helm-chart-name>/templates/values.yaml ingress.Path
 app.UsePathBase("/GeologicalProperties/webapp");
-
-if (!String.IsNullOrEmpty(builder.Configuration["FieldHostURL"]))
-    GeologicalPropertiesApp.GeologicalProperties.WebApp.Configuration.FieldHostURL = builder.Configuration["FieldHostURL"];
-if (!String.IsNullOrEmpty(builder.Configuration["ClusterHostURL"]))
-    GeologicalPropertiesApp.GeologicalProperties.WebApp.Configuration.ClusterHostURL = builder.Configuration["ClusterHostURL"];
-if (!String.IsNullOrEmpty(builder.Configuration["WellHostURL"]))
-    GeologicalPropertiesApp.GeologicalProperties.WebApp.Configuration.WellHostURL = builder.Configuration["WellHostURL"];
-if (!String.IsNullOrEmpty(builder.Configuration["WellBoreHostURL"]))
-    GeologicalPropertiesApp.GeologicalProperties.WebApp.Configuration.WellBoreHostURL = builder.Configuration["WellBoreHostURL"];
-if (!String.IsNullOrEmpty(builder.Configuration["GeologicalPropertiesHostURL"]))
-    GeologicalPropertiesApp.GeologicalProperties.WebApp.Configuration.GeologicalPropertiesHostURL = builder.Configuration["GeologicalPropertiesHostURL"];
-if (!String.IsNullOrEmpty(builder.Configuration["UnitConversionHostURL"]))
-    GeologicalPropertiesApp.GeologicalProperties.WebApp.Configuration.UnitConversionHostURL = builder.Configuration["UnitConversionHostURL"];
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -1,4 +1,6 @@
-﻿using OSDC.UnitConversion.DrillingRazorMudComponents;
+using OSDC.UnitConversion.DrillingRazorMudComponents;
+
+namespace NORCE.Drilling.GeologicalProperties.WebPages.Shared;
 
 public static class DataUtils
 {
