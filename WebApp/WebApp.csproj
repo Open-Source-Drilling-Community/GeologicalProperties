@@ -30,7 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ModelSharedOut\ModelSharedOut.csproj" />
     <ProjectReference Include="..\WebPages\WebPages.csproj" />
   </ItemGroup>
 
