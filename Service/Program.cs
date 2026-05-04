@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,7 +34,7 @@ builder.Services.AddSwaggerGen(config =>
 
 var app = builder.Build();
 
-var basePath = "/GeologicalProperties/api";
+var basePath = "/geologicalproperties/api";
 
 app.UsePathBase(basePath);
 

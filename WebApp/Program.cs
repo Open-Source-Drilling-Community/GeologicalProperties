@@ -37,8 +37,8 @@ builder.Services.AddSingleton<IGeologicalPropertiesAPIUtils, GeologicalPropertie
 var app = builder.Build();
 
 app.UseForwardedHeaders();
-// This needs to match with what is defined in "charts/<helm-chart-name>/templates/values.yaml ingress.Path
-app.UsePathBase("/GeologicalProperties/webapp");
+var basePath = "/geologicalproperties/webapp";
+app.UsePathBase(basePath);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -58,3 +58,4 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
