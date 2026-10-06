@@ -40,3 +40,5 @@ dotnet run --project Service/Service.csproj
 ## Contributors
 - **Eric Cayeux**, *NORCE Energy Modelling and Automation*
 - **Lucas Volpi**, *NORCE Energy Modelling and Automation*
+
+The OpenAPI generator publishes SemanticCatalogue 0.15.0 `x-osdc-semantic` metadata for the persisted interpolation-case lifecycle. POST and PUT are synchronous immediate calculation operations; GET operations retrieve the stored case or its light projection.

@@ -2,6 +2,7 @@
 using OSDC.DotnetLibraries.General.Statistics;
 using System;
 using System.Collections.Generic;
+using OSDC.DotnetLibraries.Drilling.SemanticCatalogue;
 
 namespace GeologicalProperties.Model
 {
@@ -11,11 +12,13 @@ namespace GeologicalProperties.Model
         /// <summary>
         /// Interpolated table with geological properties along measured depth
         /// </summary>
+        [Semantic(Concepts.CalculationResult, Role = Concepts.ServerDerivedCalculationResult)]
         public List<GeologicalPropertyEntry>? GeologicalPropertyInterpolatedTable { get; set; } = null;
 
         /// <summary>
         /// Extrapolated table with geological properties along measured depth
         /// </summary>
+        [Semantic(Concepts.CalculationResult, Role = Concepts.ServerDerivedCalculationResult)]
         public List<GeologicalPropertyEntry>? GeologicalPropertyExtrapolatedTable { get; set; } = null;
 
         /// <summary>

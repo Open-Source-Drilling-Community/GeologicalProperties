@@ -35,3 +35,5 @@ dotnet test ModelTest/ModelTest.csproj
 ## Contributors
 - **Eric Cayeux**, *NORCE Energy Modelling and Automation*
 - **Lucas Volpi**, *NORCE Energy Modelling and Automation*
+
+`GeologicalPropertiesInterpolationCase` carries SemanticCatalogue 0.15.0 annotations that distinguish its geological-properties input from the server-derived interpolated and extrapolated tables.

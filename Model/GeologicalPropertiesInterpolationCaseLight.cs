@@ -1,8 +1,10 @@
 ﻿using OSDC.DotnetLibraries.General.DataManagement;
 using System;
+using OSDC.DotnetLibraries.Drilling.SemanticCatalogue;
 
 namespace GeologicalProperties.Model
 {
+    [Semantic(Concepts.CalculationCase)]
     public class GeologicalPropertiesInterpolationCaseLight
     {
         /// <summary>
@@ -33,6 +35,7 @@ namespace GeologicalProperties.Model
         /// <summary>
         /// The ID of the GeologicalProperties
         /// </summary>
+        [Semantic(Concepts.CalculationSpecification, Role = Concepts.CalculationInput)]
         public Guid? GeologicalPropertiesID { get; set; } = null;
 
         /// <summary>

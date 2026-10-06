@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using OSDC.DotnetLibraries.General.DataManagement;
 using GeologicalProperties.Service.Managers;
 using GeologicalProperties.Model;
+using OSDC.DotnetLibraries.Drilling.SemanticCatalogue;
 
 namespace GeologicalProperties.Service.Controllers
 {
@@ -28,6 +29,7 @@ namespace GeologicalProperties.Service.Controllers
         /// </summary>
         /// <returns>the list of Guid of all GeologicalPropertiesInterpolationCase present in the microservice database at endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase</returns>
         [HttpGet(Name = "GetAllGeologicalPropertiesInterpolationCaseId")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.CalculationCaseRetrieval)]
         public ActionResult<IEnumerable<Guid>> GetAllGeologicalPropertiesInterpolationCaseId()
         {
             var ids = _geologicalPropertiesManagerInterpolationCase.GetAllGeologicalPropertiesInterpolationCaseId();
@@ -46,6 +48,7 @@ namespace GeologicalProperties.Service.Controllers
         /// </summary>
         /// <returns>the list of MetaInfo of all GeologicalPropertiesInterpolationCase present in the microservice database, at endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase/MetaInfo</returns>
         [HttpGet("MetaInfo", Name = "GetAllGeologicalPropertiesInterpolationCaseMetaInfo")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.CalculationCaseRetrieval)]
         public ActionResult<IEnumerable<MetaInfo>> GetAllGeologicalPropertiesInterpolationCaseMetaInfo()
         {
             var vals = _geologicalPropertiesManagerInterpolationCase.GetAllGeologicalPropertiesInterpolationCaseMetaInfo();
@@ -65,6 +68,7 @@ namespace GeologicalProperties.Service.Controllers
         /// <param name="guid"></param>
         /// <returns>the GeologicalPropertiesInterpolationCase identified by its Guid from the microservice database, at endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase/MetaInfo/id</returns>
         [HttpGet("{id}", Name = "GetGeologicalPropertiesInterpolationCaseById")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.CalculationCaseRetrieval)]
         public ActionResult<GeologicalPropertiesInterpolationCase?> GetGeologicalPropertiesInterpolationCaseById(Guid id)
         {
             if (!id.Equals(Guid.Empty))
@@ -90,6 +94,7 @@ namespace GeologicalProperties.Service.Controllers
         /// </summary>
         /// <returns>the list of all GeologicalPropertiesInterpolationCaseLight present in the microservice database, at endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase/LightData</returns>
         [HttpGet("LightData", Name = "GetAllGeologicalPropertiesInterpolationCaseLight")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.CalculationCaseRetrieval)]
         public ActionResult<IEnumerable<GeologicalPropertiesInterpolationCaseLight>> GetAllGeologicalPropertiesInterpolationCaseLight()
         {
             var vals = _geologicalPropertiesManagerInterpolationCase.GetAllGeologicalPropertiesInterpolationCaseLight();
@@ -108,6 +113,7 @@ namespace GeologicalProperties.Service.Controllers
         /// </summary>
         /// <returns>the list of all GeologicalPropertiesInterpolationCase present in the microservice database, at endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase/HeavyData</returns>
         [HttpGet("HeavyData", Name = "GetAllGeologicalPropertiesInterpolationCase")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.CalculationCaseRetrieval)]
         public ActionResult<IEnumerable<Model.GeologicalPropertiesInterpolationCase?>> GetAllGeologicalPropertiesInterpolationCase()
         {
             var vals = _geologicalPropertiesManagerInterpolationCase.GetAllGeologicalPropertiesInterpolationCase();
@@ -127,6 +133,7 @@ namespace GeologicalProperties.Service.Controllers
         /// <param name="geologicalProperties"></param>
         /// <returns>true if the given GeologicalPropertiesInterpolationCase has been added successfully to the microservice database, at the endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase</returns>
         [HttpPost(Name = "PostGeologicalPropertiesInterpolationCase")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.ImmediateCalculationSubmission)]
         public ActionResult PostGeologicalPropertiesInterpolationCase([FromBody] GeologicalPropertiesInterpolationCase? data)
         {
             // Check if geologicalProperties exists in the database through ID
@@ -165,6 +172,7 @@ namespace GeologicalProperties.Service.Controllers
         /// <param name="geologicalProperties"></param>
         /// <returns>true if the given GeologicalPropertiesInterpolationCase has been updated successfully to the microservice database, at the endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase/id</returns>
         [HttpPut("{id}", Name = "PutGeologicalPropertiesInterpolationCaseById")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.ImmediateCalculationReplacement)]
         public ActionResult PutGeologicalPropertiesInterpolationCaseById(Guid id, [FromBody] Model.GeologicalPropertiesInterpolationCase? data)
         {
             // Check if GeologicalProperties is in the data base

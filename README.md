@@ -88,3 +88,7 @@ dotnet test ServiceTest/ServiceTest.csproj
 ## Contributors
 - **Eric Cayeux**, *NORCE Energy Modelling and Automation*
 - **Lucas Volpi**, *NORCE Energy Modelling and Automation*
+
+## Persisted calculation-case lifecycle
+
+`GeologicalPropertiesInterpolationCase` is a persisted, immediately evaluated case. Its OpenAPI schema and GET/POST/PUT operations use SemanticCatalogue 0.15.0 calculation-case, input, result, retrieval, immediate-submission, and immediate-replacement roles. The light representation is a payload-conscious case projection, not an asynchronous status resource.
