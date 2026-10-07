@@ -209,6 +209,7 @@ namespace GeologicalProperties.Service.Controllers
         /// <param name="guid"></param>
         /// <returns>true if the GeologicalProperties was deleted from the microservice database, at the endpoint GeologicalProperties/api/GeologicalPropertiesInterpolationCase/id</returns>
         [HttpDelete("{id}", Name = "DeleteGeologicalPropertiesInterpolationCaseById")]
+        [Semantic(Concepts.CalculationCase, Role = Concepts.CalculationCaseDeletion)]
         public ActionResult DeleteGeologicalPropertiesInterpolationCaseById(Guid id)
         {
             if (_geologicalPropertiesManagerInterpolationCase.GetGeologicalPropertiesInterpolationCaseById(id) != null)
